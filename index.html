@@ -248,34 +248,50 @@
   const PREFIX = "ttal-";
 
   /* Optional: a self-hosted PeerJS server, passed on by the projector page (?peer=host:port). */
-  // Relay server (TURN) for networks that block a direct connection to the laptop. The projector passes its
-  // details in the QR link after "#": that part of a link never leaves the phone and is not on the site.
+  // Relay server (TURN) for networks that block a direct connection to the laptop. The projector's QR link
+  // carries the address of a small relay service and an access code after "#": that part of a link never leaves
+  // the phone and is not on the site. The service hands out fresh, short-lived relay details.
   // Without it, PeerJS's own settings are used.
-  const RELAY = (() => {
-    // read it once, keep it only in this browser tab (so a reload still works), and take it out of the address bar
-    const m = /(?:^#|&)turn=([^&]+)/.exec(location.hash);
-    let login = m ? decodeURIComponent(m[1]) : null;
-    try { if (login) sessionStorage.setItem("ttal-turn", login); else login = sessionStorage.getItem("ttal-turn"); } catch {}
-    if (m) history.replaceState(null, "", location.pathname + location.search);
-    if (!login) return null;
-    const [username, credential] = login.split(":");
-    if (!username || !credential) return null;
-    return { iceServers: [
-      { urls: "stun:stun.l.google.com:19302" },
-      { urls: "stun:stun.relay.metered.ca:80" },
-      { urls: "turn:global.relay.metered.ca:80", username, credential },
-      { urls: "turn:global.relay.metered.ca:80?transport=tcp", username, credential },
-      { urls: "turn:global.relay.metered.ca:443", username, credential },
-      { urls: "turns:global.relay.metered.ca:443?transport=tcp", username, credential },
-    ], sdpSemantics: "unified-plan" };
+  const relayInfo = (() => {
+    const h = new URLSearchParams(location.hash.slice(1));
+    let info = h.get("relay") && h.get("key") ? { url: h.get("relay"), key: h.get("key") }
+             : h.get("turn") ? { turn: h.get("turn") } : null;
+    try {
+      if (info) sessionStorage.setItem("ttal-relay", JSON.stringify(info));
+      else info = JSON.parse(sessionStorage.getItem("ttal-relay"));
+    } catch {}
+    if (location.hash) history.replaceState(null, "", location.pathname + location.search);   // out of the address bar
+    return info;
   })();
-  const peerOptions = (() => {
+
+  async function fetchRelay(info) {
+    if (!info) return null;
+    if (info.turn) {                           // older projector files: a fixed Metered login ("#turn=user:pass")
+      const [username, credential] = info.turn.split(":");
+      return { iceServers: [
+        { urls: "stun:stun.relay.metered.ca:80" },
+        { urls: "turn:global.relay.metered.ca:80", username, credential },
+        { urls: "turn:global.relay.metered.ca:80?transport=tcp", username, credential },
+        { urls: "turn:global.relay.metered.ca:443", username, credential },
+        { urls: "turns:global.relay.metered.ca:443?transport=tcp", username, credential },
+      ], sdpSemantics: "unified-plan" };
+    }
+    try {
+      const ask = fetch(info.url + (info.url.includes("?") ? "&" : "?") + "key=" + encodeURIComponent(info.key), { cache: "no-store" });
+      const res = await Promise.race([ask, new Promise((_, no) => setTimeout(() => no(new Error("timeout")), 6000))]);
+      const data = await res.json();
+      return Array.isArray(data.iceServers) && data.iceServers.length ? { iceServers: data.iceServers, sdpSemantics: "unified-plan" } : null;
+    } catch { return null; }
+  }
+  const relayReady = fetchRelay(relayInfo);
+
+  const baseOptions = (() => {
     const custom = params.get("peer");
-    const base = custom
+    return custom
       ? { host: custom.split(":")[0], port: +custom.split(":")[1] || 443, path: "/", secure: location.protocol === "https:", debug: 0 }
       : { debug: 0 };
-    return RELAY ? { ...base, config: RELAY } : base;
   })();
+  const peerOptions = (relay) => (relay ? { ...baseOptions, config: relay } : baseOptions);
 
   const store = {
     get(k) { try { return localStorage.getItem(k); } catch { return null; } },
@@ -317,7 +333,7 @@
       // Game over: forget the game on this phone. The projector closes the connection shortly.
       finished = true;
       for (const k of ["ttal-pid", "ttal-name", "ttal-code", "ttal-joined"]) store.set(k, "");
-      try { sessionStorage.removeItem("ttal-turn"); } catch {}
+      try { sessionStorage.removeItem("ttal-relay"); } catch {}
       history.replaceState(null, "", location.pathname);
     }
     if (state.final) {
@@ -396,11 +412,24 @@
 
   /* ---------- connection to the projector ---------- */
 
+  let creating = false;
   function connect() {
     clearTimeout(retryTimer);
-    if (!peer || peer.destroyed) {
+    if ((!peer || peer.destroyed) && !creating) {
       step("Finding the game…");
-      peer = new Peer(peerOptions);
+      creating = true;
+      relayReady.then((relay) => { creating = false; if (!peer || peer.destroyed) newPeer(relay); });
+    } else if (peer?.open) {
+      openConnection();
+    } else if (peer) {
+      reconnectPeerSoon();
+    }
+  }
+
+  function newPeer(relay) {
+    {
+      $("#relay-note").hidden = !relay;
+      peer = new Peer(peerOptions(relay));
       // "open" fires again after every reconnect to the PeerJS server: only connect if we aren't already
       peer.on("open", () => { if (!conn?.open) openConnection(); });
       peer.on("error", (err) => {
@@ -411,10 +440,6 @@
         retry();
       });
       peer.on("disconnected", reconnectPeerSoon);
-    } else if (peer.open) {
-      openConnection();
-    } else {
-      reconnectPeerSoon();
     }
   }
 
@@ -558,7 +583,7 @@
   // true = it is, false = it isn't, null = can't tell (e.g. a slow network), so just carry on.
   function gameIsRunning(c) {
     return new Promise((resolve) => {
-      const probe = new Peer(peerOptions);
+      const probe = new Peer(peerOptions(null));    // only asks the server whether the game exists
       let settled = false;
       const done = (v) => { if (settled) return; settled = true; setTimeout(() => probe.destroy(), 50); resolve(v); };
       probe.on("open", () => probe.connect(PREFIX + c, { serialization: "json" }).on("open", () => done(true)));
@@ -588,7 +613,6 @@
 
   /* ---------- start ---------- */
 
-  $("#relay-note").hidden = !RELAY;
   $("#name").value = name;
   $("#code").value = code;
   if (params.get("k")) $("#code-row").hidden = true;      // came from the QR code: the code is known

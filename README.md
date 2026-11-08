@@ -88,16 +88,17 @@ How players can join depends on the networks they're on:
 
 Most mobile and school networks don't let a phone connect straight to a laptop. The connection then has to go through a relay server. PeerJS has a free shared one, but it's used by everyone and in practice only lets one phone on mobile data in at a time.
 
-To set up your own relay:
+To set up your own relay with Cloudflare (1,000 GB a month free):
 
-1. Create a free account at [metered.ca](https://www.metered.ca). The free plan includes 500 MB a month, which is enough for many games, since one player uses roughly 0.5 to 1 MB per game.
-2. On the TURN Server page, click **Add Credential** and note the username and password.
-3. Make a **private** copy of `projector.html` (or `projektor.html`) and search for `RELAY_LOGIN` and fill in `"username:password"`. Keep that copy on your laptop and don't put it in a public repository.
-4. Open your copy. The join screen should say **🔁 Relay: on**.
+1. In the Cloudflare dashboard, go to **Realtime → TURN Server** and create a TURN key. Note the **Turn Token ID** and the **API Token**.
+2. Go to **Workers & Pages → Create → Worker**, replace its code with [`tools/relay-worker.js`](tools/relay-worker.js) and deploy it.
+3. In the Worker's **Settings → Variables and Secrets**, add three secrets: `TURN_KEY_ID` and `TURN_KEY_API_TOKEN` (from step 1), and `ACCESS_CODE` (a password of your own).
+4. Make a **private** copy of `projector.html` (or `projektor.html`), search for `RELAY_URL` and `RELAY_KEY`, and fill in your Worker's address and your access code. Keep that copy on your laptop and don't put it in a public repository.
+5. Open your copy. The join screen should say **🔁 Relay: on**.
 
-The QR code passes the relay details to the phones after a `#` in the link. That part of a link is never sent to a website, and each phone removes it from the address bar right away. Phones that joined this way show **🔁 Relay: on** while connecting.
+The Worker hands out fresh relay details that last a day, so the Cloudflare key never leaves Cloudflare. The QR code gives the phones the Worker's address and access code after a `#` in the link. That part of a link is never sent to a website, and each phone removes it from the address bar right away. Phones that use the relay show **🔁 Relay: on** while connecting.
 
-You can check whether the relay works on a particular phone with Metered's [TURN testing tool](https://www.metered.ca/turn-server-testing).
+A player uses roughly 0.5 to 1 MB per game through the relay, so the free allowance goes a very long way.
 
 ## Controls
 
@@ -135,6 +136,7 @@ We tested it with 100 simulated players on one laptop. Everyone joined within a 
 | `projektor.html` | The game, in Afrikaans |
 | `speel.html` | The page players open on their phones (Afrikaans) |
 | `example/`, `voorbeeld/` | Example folders with a spreadsheet, photos and a logo |
+| `tools/relay-worker.js` | A small Cloudflare Worker that hands out relay details (see *Playing across different networks*) |
 | `docs/` | Pictures for this page |
 
 ## Good to know

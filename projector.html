@@ -3205,27 +3205,29 @@ var qrcode = function() {
     // page, so a fork works without changing anything. Opened as a file: use the published phone page.
     const DEFAULT_PLAYER_URL = /^https?:$/.test(location.protocol) ? new URL("./", location.href).href : "https://butwhy-cloud.github.io/2-truths-and-a-lie/";
     const customPeer = new URLSearchParams(location.search).get("peer");   // optional own PeerJS server "host:port"
-    // Relay server (TURN) for networks that block direct connections: "username:password" of a Metered TURN
-    // credential (metered.ca). Leave empty to use PeerJS's own settings. Keep this out of public copies:
-    // phones receive it through the QR link (after "#"), which never reaches a website.
-    const RELAY_LOGIN = "";
-    const RELAY = (() => {
-      const [username, credential] = RELAY_LOGIN.split(":");
-      if (!username || !credential) return null;
-      return { iceServers: [
-        { urls: "stun:stun.l.google.com:19302" },
-        { urls: "stun:stun.relay.metered.ca:80" },
-        { urls: "turn:global.relay.metered.ca:80", username, credential },
-        { urls: "turn:global.relay.metered.ca:80?transport=tcp", username, credential },
-        { urls: "turn:global.relay.metered.ca:443", username, credential },
-        { urls: "turns:global.relay.metered.ca:443?transport=tcp", username, credential },
-      ], sdpSemantics: "unified-plan" };
-    })();
-    const peerOptions = {
+    // Relay server (TURN) for networks that block direct connections. RELAY_URL is a small relay service
+    // (for example the Cloudflare Worker in tools/relay-worker.js) and RELAY_KEY its access code. Fill them in only
+    // in a private copy of this file. The service hands out fresh relay details; the phones get its address and
+    // code through the QR link (after "#"), which never reaches a website. Leave empty to use PeerJS's settings.
+    const RELAY_URL = "";
+    const RELAY_KEY = "";
+    let relay = null, relayState = RELAY_URL ? "laai" : "af";
+    async function fetchRelay() {
+      if (!RELAY_URL) return null;
+      try {
+        const ask = fetch(RELAY_URL + (RELAY_URL.includes("?") ? "&" : "?") + "key=" + encodeURIComponent(RELAY_KEY), { cache: "no-store" });
+        const res = await Promise.race([ask, new Promise((_, no) => setTimeout(() => no(new Error("timeout")), 6000))]);
+        const data = await res.json();
+        relay = Array.isArray(data.iceServers) && data.iceServers.length ? { iceServers: data.iceServers, sdpSemantics: "unified-plan" } : null;
+      } catch { relay = null; }
+      relayState = relay ? "aan" : "fout";
+      return relay;
+    }
+    const peerOptions = () => ({
       ...(customPeer ? { host: customPeer.split(":")[0], port: +customPeer.split(":")[1] || 443, path: "/", secure: location.protocol === "https:" } : {}),
       debug: 0,
-      ...(RELAY ? { config: RELAY } : {}),
-    };
+      ...(relay ? { config: relay } : {}),
+    });
 
     const lobby = $("#lobby"), board = $("#board"), pill = $("#livePill");
     const conns = new Map();            // player id → open connection
@@ -3386,12 +3388,12 @@ var qrcode = function() {
         const img = new Image();
         img.src = src;
         await img.decode();
-        const scale = Math.min(1, 220 / Math.max(img.naturalWidth, img.naturalHeight));   // small: it travels to every phone
+        const scale = Math.min(1, 280 / Math.max(img.naturalWidth, img.naturalHeight));
         const canvas = document.createElement("canvas");
         canvas.width = Math.round(img.naturalWidth * scale);
         canvas.height = Math.round(img.naturalHeight * scale);
         canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
-        return canvas.toDataURL("image/jpeg", 0.7);
+        return canvas.toDataURL("image/jpeg", 0.75);
       })().catch(() => null));
       return thumbs.get(p.n);
     }
@@ -3452,12 +3454,18 @@ var qrcode = function() {
       }
     }
 
-    function start() {
-      if (peer && !peer.destroyed) return;
+    let starting = false;
+    async function start() {
+      if ((peer && !peer.destroyed) || starting) return;
       game.active = true;
       save();
       setStatus("Connecting to the internet…");
-      const me = peer = new Peer(PREFIX + game.code, peerOptions);
+      starting = true;
+      await fetchRelay();                         // fresh relay details for this session (if a relay is set up)
+      starting = false;
+      if (!game.active || (peer && !peer.destroyed)) return;
+      render();
+      const me = peer = new Peer(PREFIX + game.code, peerOptions());
       const current = () => me === peer;        // a replaced connection (new game) has nothing more to say
       peer.on("open", () => current() && setStatus("Ready: players can join"));
       peer.on("connection", (c) => {
@@ -3534,9 +3542,9 @@ var qrcode = function() {
     function joinLink() {
       const url = new URL(game.playerUrl, location.href);
       url.searchParams.set("k", game.code);
-      url.searchParams.set("v", "202611081816");    // a new version is a new address, so phones never get an old stored copy
+      url.searchParams.set("v", "202611081828");    // a new version is a new address, so phones never get an old stored copy
       if (customPeer) url.searchParams.set("peer", customPeer);
-      if (RELAY) url.hash = "turn=" + encodeURIComponent(RELAY_LOGIN);   // after "#": stays on the phone
+      if (RELAY_URL) url.hash = new URLSearchParams({ relay: RELAY_URL, key: RELAY_KEY }).toString();   // after "#": stays on the phone
       return url.href;
     }
 
@@ -3569,7 +3577,12 @@ var qrcode = function() {
         $("#joinCode").textContent = game.code;
         $("#joinUrl").textContent = new URL(game.playerUrl, location.href).href.replace(/^https?:\/\//, "");
         $("#netStatus").textContent = game.active ? status : "Off";
-        $("#relayStatus").textContent = RELAY ? "🔁 Relay: on (for mobile data and other networks)" : "🔁 Relay: off (only the same Wi-Fi is reliable)";
+        $("#relayStatus").textContent = {
+          aan: "🔁 Relay: on (for mobile data and other networks)",
+          laai: "🔁 Relay: loading…",
+          fout: "⚠️ Relay: couldn't be loaded. Only the same Wi-Fi is reliable.",
+          af: "🔁 Relay: off (only the same Wi-Fi is reliable)",
+        }[relayState];
         $("#photoHint").hidden = chosenPhotos.size > 0;
         $("#rosterCount").textContent = table.length;
         $("#roster").replaceChildren(...table.map((e) => {
