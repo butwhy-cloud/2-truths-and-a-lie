@@ -3366,12 +3366,12 @@ var qrcode = function() {
         const img = new Image();
         img.src = src;
         await img.decode();
-        const scale = Math.min(1, 280 / Math.max(img.naturalWidth, img.naturalHeight));
+        const scale = Math.min(1, 220 / Math.max(img.naturalWidth, img.naturalHeight));   // small: it travels to every phone
         const canvas = document.createElement("canvas");
         canvas.width = Math.round(img.naturalWidth * scale);
         canvas.height = Math.round(img.naturalHeight * scale);
         canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
-        return canvas.toDataURL("image/jpeg", 0.75);
+        return canvas.toDataURL("image/jpeg", 0.7);
       })().catch(() => null));
       return thumbs.get(p.n);
     }
@@ -3514,7 +3514,7 @@ var qrcode = function() {
     function joinLink() {
       const url = new URL(game.playerUrl, location.href);
       url.searchParams.set("k", game.code);
-      url.searchParams.set("v", "202611081727");    // a new version is a new address, so phones never get an old stored copy
+      url.searchParams.set("v", "202611081749");    // a new version is a new address, so phones never get an old stored copy
       if (customPeer) url.searchParams.set("peer", customPeer);
       return url.href;
     }
