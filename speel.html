@@ -247,11 +247,33 @@
   const PREFIX = "ttal-";
 
   /* Optional: a self-hosted PeerJS server, passed on by the projector page (?peer=host:port). */
+  // Relay server (TURN) for networks that block a direct connection to the laptop. The projector passes its
+  // details in the QR link after "#": that part of a link never leaves the phone and is not on the site.
+  // Without it, PeerJS's own settings are used.
+  const RELAY = (() => {
+    // read it once, keep it only in this browser tab (so a reload still works), and take it out of the address bar
+    const m = /(?:^#|&)turn=([^&]+)/.exec(location.hash);
+    let login = m ? decodeURIComponent(m[1]) : null;
+    try { if (login) sessionStorage.setItem("ttal-turn", login); else login = sessionStorage.getItem("ttal-turn"); } catch {}
+    if (m) history.replaceState(null, "", location.pathname + location.search);
+    if (!login) return null;
+    const [username, credential] = login.split(":");
+    if (!username || !credential) return null;
+    return { iceServers: [
+      { urls: "stun:stun.l.google.com:19302" },
+      { urls: "stun:stun.relay.metered.ca:80" },
+      { urls: "turn:global.relay.metered.ca:80", username, credential },
+      { urls: "turn:global.relay.metered.ca:80?transport=tcp", username, credential },
+      { urls: "turn:global.relay.metered.ca:443", username, credential },
+      { urls: "turns:global.relay.metered.ca:443?transport=tcp", username, credential },
+    ], sdpSemantics: "unified-plan" };
+  })();
   const peerOptions = (() => {
     const custom = params.get("peer");
-    if (!custom) return { debug: 0 };
-    const [host, port] = custom.split(":");
-    return { host, port: +port || 443, path: "/", secure: location.protocol === "https:", debug: 0 };
+    const base = custom
+      ? { host: custom.split(":")[0], port: +custom.split(":")[1] || 443, path: "/", secure: location.protocol === "https:", debug: 0 }
+      : { debug: 0 };
+    return RELAY ? { ...base, config: RELAY } : base;
   })();
 
   const store = {
@@ -294,6 +316,7 @@
       // Game over: forget the game on this phone. The projector closes the connection shortly.
       finished = true;
       for (const k of ["ttal-pid", "ttal-name", "ttal-code", "ttal-joined"]) store.set(k, "");
+      try { sessionStorage.removeItem("ttal-turn"); } catch {}
       history.replaceState(null, "", location.pathname);
     }
     if (state.final) {

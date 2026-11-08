@@ -99,7 +99,9 @@ The card picture is built into `projector.html`. To use your own design, keep th
 
 ## How it works
 
-The host's laptop runs the game. Phones connect to it directly over an encrypted connection (WebRTC), and a free service called [PeerJS](https://peerjs.com) only helps them find each other. Everything the game needs, including PeerJS, the QR code maker and the handwriting font, is built into the pages.
+The host's laptop runs the game. Phones connect to it directly over an encrypted connection (WebRTC), and a free service called [PeerJS](https://peerjs.com) only helps them find each other.
+
+**Mobile data and strict networks.** Some networks don't allow a direct connection, and then a relay server (TURN) is needed in between. The free one PeerJS uses is shared by everyone and can't be relied on: in practice only one phone on mobile data got in at a time. To use your own, get a free TURN account at [metered.ca](https://www.metered.ca), and in a **private copy** of the projector page fill in `RELAY_LOGIN = "username:password"`. The QR code then passes the relay details to the phones after a `#` in the link, which is never sent to a website. Don't put your login in a public repository. Everything the game needs, including PeerJS, the QR code maker and the handwriting font, is built into the pages.
 
 We tested it with 100 simulated players on one laptop. Everyone joined within a few seconds and results reached every phone almost instantly. With real phones, the network matters more than the number of players.
 
