@@ -77,6 +77,28 @@ When the game ends, everyone is disconnected and the laptop and phones forget th
 
 Chrome may say it's "uploading" files when you pick the folder. That's just how Chrome describes giving a page access to a folder. The files are only read on the laptop.
 
+## Playing across different networks
+
+How players can join depends on the networks they're on:
+
+| Players are on | What you need |
+|---|---|
+| The same Wi-Fi as the laptop (or a phone hotspot the laptop is on too) | Nothing extra. This works out of the box. |
+| Mobile data, or a different Wi-Fi | Your own relay server (TURN). |
+
+Most mobile and school networks don't let a phone connect straight to a laptop. The connection then has to go through a relay server. PeerJS has a free shared one, but it's used by everyone and in practice only lets one phone on mobile data in at a time.
+
+To set up your own relay:
+
+1. Create a free account at [metered.ca](https://www.metered.ca). The free plan includes 500 MB a month, which is enough for many games, since one player uses roughly 0.5 to 1 MB per game.
+2. On the TURN Server page, click **Add Credential** and note the username and password.
+3. Make a **private** copy of `projector.html` (or `projektor.html`) and search for `RELAY_LOGIN` and fill in `"username:password"`. Keep that copy on your laptop and don't put it in a public repository.
+4. Open your copy. The join screen should say **🔁 Relay: on**.
+
+The QR code passes the relay details to the phones after a `#` in the link. That part of a link is never sent to a website, and each phone removes it from the address bar right away. Phones that joined this way show **🔁 Relay: on** while connecting.
+
+You can check whether the relay works on a particular phone with Metered's [TURN testing tool](https://www.metered.ca/turn-server-testing).
+
 ## Controls
 
 | To do this | Click | Or press |
@@ -101,7 +123,6 @@ The card picture is built into `projector.html`. To use your own design, keep th
 
 The host's laptop runs the game. Phones connect to it directly over an encrypted connection (WebRTC), and a free service called [PeerJS](https://peerjs.com) only helps them find each other.
 
-**Mobile data and strict networks.** Some networks don't allow a direct connection, and then a relay server (TURN) is needed in between. The free one PeerJS uses is shared by everyone and can't be relied on: in practice only one phone on mobile data got in at a time. To use your own, get a free TURN account at [metered.ca](https://www.metered.ca), and in a **private copy** of the projector page fill in `RELAY_LOGIN = "username:password"`. The QR code then passes the relay details to the phones after a `#` in the link, which is never sent to a website. Don't put your login in a public repository. Everything the game needs, including PeerJS, the QR code maker and the handwriting font, is built into the pages.
 
 We tested it with 100 simulated players on one laptop. Everyone joined within a few seconds and results reached every phone almost instantly. With real phones, the network matters more than the number of players.
 

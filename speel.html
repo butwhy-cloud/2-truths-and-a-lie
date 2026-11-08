@@ -182,6 +182,7 @@
       <div class="pulse"></div>
       <h2 style="margin-top:18px" id="wait-title">Jy is in!</h2>
       <p class="muted" id="wait-text">Wag vir die volgende persoon op die skerm…</p>
+      <p class="muted" id="relay-note" style="font-size:13px; margin-top:6px" hidden>🔁 Relay: aan</p>
       <p style="margin-top:14px; font-weight:600">🎯 Kies die leuen. Hoe vinniger jy reg is, hoe meer punte kry jy.</p>
       <p class="muted" style="margin-top:6px">🔁 Jy kan jou antwoord verander, maar die tyd hou aan loop.</p>
     </div>
@@ -443,7 +444,7 @@
     conn = c;
     old?.close();
     const current = () => c === conn;
-    const giveUp = setTimeout(() => { if (current() && !c.open) { directFailures++; retry(); } }, 10000);
+    const giveUp = setTimeout(() => { if (current() && !c.open) { directFailures++; retry(); } }, 25000);   // a relayed link can take a while
 
     c.on("open", () => {
       clearTimeout(giveUp);
@@ -587,6 +588,7 @@
 
   /* ---------- start ---------- */
 
+  $("#relay-note").hidden = !RELAY;
   $("#name").value = name;
   $("#code").value = code;
   if (params.get("k")) $("#code-row").hidden = true;      // came from the QR code: the code is known

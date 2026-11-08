@@ -228,6 +228,7 @@
   .lobby .rules { font-weight: 700; color: var(--ink); margin: 2px 0 14px; }
   .lobby .hint { margin-top: 12px; font-size: clamp(13px, 1.8vmin, 18px); color: #a06a00; }
   #netStatus { font-size: clamp(13px, 1.8vmin, 18px); color: #557a12; font-weight: 600; }
+  #relayStatus { font-size: clamp(12px, 1.6vmin, 16px); color: #6b6b6b; }
   .roster { grid-column: 1 / -1; }
   .roster h3 { margin: 0 0 8px; font: clamp(20px, 3vmin, 32px) var(--hand); }
   #roster { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -317,6 +318,7 @@
       <p>with the code:</p>
       <div class="code" id="joinCode"></div>
       <div id="netStatus"></div>
+      <div id="relayStatus"></div>
       <p id="photoHint" class="hint">Want the photos on the phones too? Choose the folder with <b>📁 Folder</b> below.</p>
     </div>
     <div class="roster">
@@ -3532,7 +3534,7 @@ var qrcode = function() {
     function joinLink() {
       const url = new URL(game.playerUrl, location.href);
       url.searchParams.set("k", game.code);
-      url.searchParams.set("v", "202611081814");    // a new version is a new address, so phones never get an old stored copy
+      url.searchParams.set("v", "202611081816");    // a new version is a new address, so phones never get an old stored copy
       if (customPeer) url.searchParams.set("peer", customPeer);
       if (RELAY) url.hash = "turn=" + encodeURIComponent(RELAY_LOGIN);   // after "#": stays on the phone
       return url.href;
@@ -3567,6 +3569,7 @@ var qrcode = function() {
         $("#joinCode").textContent = game.code;
         $("#joinUrl").textContent = new URL(game.playerUrl, location.href).href.replace(/^https?:\/\//, "");
         $("#netStatus").textContent = game.active ? status : "Off";
+        $("#relayStatus").textContent = RELAY ? "🔁 Relay: on (for mobile data and other networks)" : "🔁 Relay: off (only the same Wi-Fi is reliable)";
         $("#photoHint").hidden = chosenPhotos.size > 0;
         $("#rosterCount").textContent = table.length;
         $("#roster").replaceChildren(...table.map((e) => {
