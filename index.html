@@ -268,7 +268,8 @@
   let name = store.get("ttal-name") || "";
   let peer = null, conn = null, retryTimer = null, joined = false;
   let state = null;
-  let finished = false;          // the game is over: don't reconnect, keep the final screen
+  let finished = false;
+  let directFailures = 0;        // tries where the server found the game but the direct link didn't open          // the game is over: don't reconnect, keep the final screen
   const photos = new Map();     // round number → photo, kept in memory only
 
   /* ---------- screens ---------- */
@@ -374,6 +375,7 @@
   function connect() {
     clearTimeout(retryTimer);
     if (!peer || peer.destroyed) {
+      step("Finding the game…");
       peer = new Peer(peerOptions);
       // "open" fires again after every reconnect to the PeerJS server: only connect if we aren't already
       peer.on("open", () => { if (!conn?.open) openConnection(); });
@@ -403,14 +405,22 @@
 
   // Only the newest connection counts: events from older ones are ignored, so a
   // reconnect can never knock out the connection that replaced it.
+  // While joining, say which step we're at, so a stuck phone shows where it's stuck.
+  function step(text) {
+    if (state) return;                       // already in the game: nothing to show
+    if ($("#s-wait").classList.contains("on")) $("#wait-text").textContent = text;
+  }
+
   function openConnection() {
     if (conn?.open) return;
+    step(directFailures ? "Your network won't allow a direct connection. Trying again… Tip: use the same Wi-Fi as the laptop."
+                        : "Connecting to the laptop…");
     const old = conn;
     const c = peer.connect(PREFIX + code, { reliable: true, serialization: "json" });
     conn = c;
     old?.close();
     const current = () => c === conn;
-    const giveUp = setTimeout(() => { if (current() && !c.open) retry(); }, 10000);
+    const giveUp = setTimeout(() => { if (current() && !c.open) { directFailures++; retry(); } }, 10000);
 
     c.on("open", () => {
       clearTimeout(giveUp);
