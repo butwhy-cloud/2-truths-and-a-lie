@@ -380,6 +380,7 @@
       peer.on("error", (err) => {
         // Still connected to the projector? Then only the introducer server is gone: no problem.
         if (conn?.open) return reconnectPeerSoon();
+        if (err.type === "peer-unavailable" && ++notFound >= 2) return gameNotFound();
         if (err.type === "peer-unavailable") banner(`Kan nie speletjie ${code} kry nie. Probeer weer…`);
         retry();
       });
@@ -503,12 +504,42 @@
     navigator.vibrate?.(30);
   });
 
+  // The game behind this code isn't running: it has ended, or the code is wrong.
+  let notFound = 0;
+  function gameNotFound() {
+    clearTimeout(retryTimer); clearTimeout(slowTimer); slowTimer = null;
+    joined = false; notFound = 0;
+    const old = conn; conn = null; old?.close();
+    peer?.destroy(); peer = null;
+    code = "";
+    store.set("ttal-code", ""); store.set("ttal-joined", "");
+    history.replaceState(null, "", location.pathname);
+    $("#code").value = "";
+    $("#code-row").hidden = false;
+    screen("s-join");
+    banner("Hierdie speletjie is klaar of die kode is verkeerd. Tik die kode wat op die skerm is.");
+  }
+
+  // Opened from an invite link: first check that the game is still running.
+  // true = it is, false = it isn't, null = can't tell (e.g. a slow network), so just carry on.
+  function gameIsRunning(c) {
+    return new Promise((resolve) => {
+      const probe = new Peer(peerOptions);
+      let settled = false;
+      const done = (v) => { if (settled) return; settled = true; setTimeout(() => probe.destroy(), 50); resolve(v); };
+      probe.on("open", () => probe.connect(PREFIX + c, { serialization: "json" }).on("open", () => done(true)));
+      probe.on("error", (err) => done(err.type === "peer-unavailable" ? false : null));
+      setTimeout(() => done(null), 8000);
+    });
+  }
+
   $("#join-form").addEventListener("submit", (e) => {
     e.preventDefault();
     name = $("#name").value.trim().slice(0, 24);
     code = $("#code").value.trim().toUpperCase();
     if (!name || code.length !== 4) return;
     finished = false;
+    notFound = 0;
     store.set("ttal-name", name);
     store.set("ttal-code", code);
     store.set("ttal-joined", code);
@@ -516,7 +547,9 @@
     screen("s-wait");
     $("#wait-title").textContent = "Koppel…";
     $("#wait-text").textContent = "";
-    connect();
+    // a code typed by hand: check it belongs to a running game before connecting
+    if (params.get("k") === code) return connect();
+    gameIsRunning(code).then((running) => (running === false ? gameNotFound() : connect()));
   });
 
   /* ---------- start ---------- */
@@ -524,8 +557,18 @@
   $("#name").value = name;
   $("#code").value = code;
   if (params.get("k")) $("#code-row").hidden = true;      // came from the QR code: the code is known
-  screen("s-join");
-  if (name && code && store.get("ttal-joined") === code) $("#join-form").requestSubmit();
+  if (code.length === 4) {
+    screen("s-wait");
+    $("#wait-title").textContent = "Kyk of die speletjie aan is…";
+    $("#wait-text").textContent = "";
+    gameIsRunning(code).then((running) => {
+      if (running === false) return gameNotFound();
+      screen("s-join");
+      if (name && store.get("ttal-joined") === code) $("#join-form").requestSubmit();
+    });
+  } else {
+    screen("s-join");
+  }
 })();
 </script>
 </body>
