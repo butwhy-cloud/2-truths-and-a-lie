@@ -91,8 +91,8 @@ Most mobile and school networks don't let a phone connect straight to a laptop. 
 To set up your own relay with Cloudflare (1,000 GB a month free):
 
 1. In the Cloudflare dashboard, go to **Realtime → TURN Server** and create a TURN key. Note the **Turn Token ID** and the **API Token**.
-2. Go to **Workers & Pages → Create → Worker**, replace its code with [`tools/relay-worker.js`](tools/relay-worker.js) and deploy it.
-3. In the Worker's **Settings → Variables and Secrets**, add three secrets: `TURN_KEY_ID` and `TURN_KEY_API_TOKEN` (from step 1), and `ACCESS_CODE` (a password of your own).
+2. Go to **Workers & Pages → Create** and choose **Start with Hello World!** (not a GitHub repository). Name it, deploy it, then **Edit code**: replace everything with [`tools/relay-worker.js`](tools/relay-worker.js) and deploy again.
+3. In the Worker's **Settings → Variables and Secrets**, add three variables of type **Secret** (not Text): `TURN_KEY_ID` and `TURN_KEY_API_TOKEN` (from step 1), and `ACCESS_CODE` (a password of your own). Leave **Cloudflare Access** switched off for this Worker: the players' phones need to reach it without logging in, and the access code already protects it.
 4. Make a **private** copy of `projector.html` (or `projektor.html`), search for `RELAY_URL` and `RELAY_KEY`, and fill in your Worker's address and your access code. Keep that copy on your laptop and don't put it in a public repository.
 5. Open your copy. The join screen should say **🔁 Relay: on**.
 
