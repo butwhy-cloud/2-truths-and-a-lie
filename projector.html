@@ -244,13 +244,13 @@
     background: #f1f1f1; font: 600 16px system-ui, sans-serif; color: #222;
   }
   .sheet-actions .go { background: var(--green); color: #fff; font-size: 20px; padding: 14px 30px; }
-  .board { width: min(760px, 100%); }
+  .board { width: min(940px, 100%); }
   #exportNote { margin: 0 0 10px; font: 600 16px system-ui, sans-serif; color: #2f7d1e; }
   #exportNote.warn { color: #b25d00; }
   #facts { margin: 0 0 14px; padding: 12px 16px; border-radius: 16px; background: #f4f9e9; }
   #facts h3 { margin: 0 0 6px; font: clamp(20px, 3vmin, 30px)/1.1 var(--hand); }
   #factsList { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
-  #factsList li { display: grid; grid-template-columns: 1.6em 1fr; font: 500 clamp(14px, 2.1vmin, 21px)/1.3 system-ui, sans-serif; }
+  #factsList li { display: grid; grid-template-columns: 1.6em 1fr; font: 500 clamp(14px, 1.9vmin, 20px)/1.3 system-ui, sans-serif; }
   #boardList { list-style: none; margin: 0 0 16px; padding: 0; counter-reset: none; }
   #boardList li {
     display: grid; grid-template-columns: 3.2em 1fr auto; align-items: center; gap: 10px;
@@ -3336,7 +3336,8 @@ var qrcode = function() {
         if (lies.length >= 2 && open.right > best.right)
           facts.push(["📖", `Open book: ${who(open.n)}, ${open.right} of ${open.cast} spotted the lie`]);
       }
-      return facts;
+      // a number stays with its unit ("3 keer", "0,4 s") if a line has to wrap
+      return facts.map(([icon, text]) => [icon, text.replace(/(\d) (?=\S+\)?$|s\b)/g, "$1\u00a0")]);
     }
 
     function standings() {
@@ -3548,7 +3549,7 @@ var qrcode = function() {
     function joinLink() {
       const url = new URL(game.playerUrl, location.href);
       url.searchParams.set("k", game.code);
-      url.searchParams.set("v", "202611090739");    // a new version is a new address, so phones never get an old stored copy
+      url.searchParams.set("v", "202611090953");    // a new version is a new address, so phones never get an old stored copy
       if (customPeer) url.searchParams.set("peer", customPeer);
       if (RELAY_URL) url.hash = new URLSearchParams({ relay: RELAY_URL, key: RELAY_KEY }).toString();   // after "#": stays on the phone
       return url.href;
