@@ -84,11 +84,21 @@ How players can join depends on the networks they're on:
 | Players are on | What you need |
 |---|---|
 | The same Wi-Fi as the laptop (or a phone hotspot the laptop is on too) | Nothing extra. This works out of the box. |
-| Mobile data, or a different Wi-Fi | Your own relay server (TURN). |
+| Mobile data, or a different Wi-Fi | Your own relay server (TURN), from Cloudflare or Metered. |
 
 Most mobile and school networks don't let a phone connect straight to a laptop. The connection then has to go through a relay server. PeerJS has a free shared one, but it's used by everyone and in practice only lets one phone on mobile data in at a time.
 
-To set up your own relay with Cloudflare (1,000 GB a month free):
+There are two easy ways to get your own relay:
+
+| | Cloudflare (recommended) | Metered |
+|---|---|---|
+| Free each month | 1,000 GB | 500 MB |
+| Enough for | practically any number of games | about 500 players in total, so a few small sessions |
+| Setup | a small Worker, about 10 minutes | copy two values from the dashboard |
+
+A player uses roughly 0.5 to 1 MB per game through the relay.
+
+### Option 1: Cloudflare
 
 1. In the Cloudflare dashboard, go to **Realtime → TURN Server** and create a TURN key. Note the **Turn Token ID** and the **API Token**.
 2. Go to **Workers & Pages → Create** and choose **Start with Hello World!** (not a GitHub repository). Name it, deploy it, then **Edit code**: replace everything with [`tools/relay-worker.js`](tools/relay-worker.js) and deploy again.
@@ -96,9 +106,26 @@ To set up your own relay with Cloudflare (1,000 GB a month free):
 4. Make a **private** copy of `projector.html` (or `projektor.html`), search for `RELAY_URL` and `RELAY_KEY`, and fill in your Worker's address and your access code. Keep that copy on your laptop and don't put it in a public repository.
 5. Open your copy. The join screen should say **🔁 Relay: on**.
 
-The Worker hands out fresh relay details that last a day, so the Cloudflare key never leaves Cloudflare. The QR code gives the phones the Worker's address and access code after a `#` in the link. That part of a link is never sent to a website, and each phone removes it from the address bar right away. Phones that use the relay show **🔁 Relay: on** while connecting.
+The Worker hands out fresh relay details that last a day, so the Cloudflare key never leaves Cloudflare.
 
-A player uses roughly 0.5 to 1 MB per game through the relay, so the free allowance goes a very long way.
+### Option 2: Metered
+
+1. Sign up at [metered.ca](https://www.metered.ca) and create an app on the free plan. Your app gets an address that ends in `.metered.live`.
+2. In the dashboard, find the API key for your TURN credentials.
+3. Make a **private** copy of `projector.html` (or `projektor.html`) and fill in:
+   - `RELAY_URL`: `https://<your-app>.metered.live/api/v1/turn/credentials`
+   - `RELAY_KEY`: your API key
+
+   Keep that copy on your laptop and don't put it in a public repository.
+4. Open your copy. The join screen should say **🔁 Relay: on**.
+
+Metered hands out relay details for your app, and the game picks the right servers for your plan by itself. When the free 500 MB runs out, the relay stops until the next month, or until you upgrade.
+
+### How the phones get the relay
+
+With either option, the QR code gives the phones the relay address and key after a `#` in the link. That part of a link is never sent to a website, and each phone removes it from the address bar right away. Phones that use the relay show **🔁 Relay: on** while connecting.
+
+Anyone who has the link can use your relay while they have it, just like they can join the game. If you want, change the access code (Cloudflare) or the API key (Metered) after a session.
 
 ## Controls
 
@@ -136,7 +163,7 @@ We tested it with 100 simulated players on one laptop. Everyone joined within a 
 | `projektor.html` | The game, in Afrikaans |
 | `speel.html` | The page players open on their phones (Afrikaans) |
 | `example/`, `voorbeeld/` | Example folders with a spreadsheet, photos and a logo |
-| `tools/relay-worker.js` | A small Cloudflare Worker that hands out relay details (see *Playing across different networks*) |
+| `tools/relay-worker.js` | A small Cloudflare Worker that hands out relay details (see *Option 1: Cloudflare*) |
 | `docs/` | Pictures for this page |
 
 ## Good to know

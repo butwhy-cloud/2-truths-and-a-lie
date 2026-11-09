@@ -3205,20 +3205,26 @@ var qrcode = function() {
     // page, so a fork works without changing anything. Opened as a file: use the published phone page.
     const DEFAULT_PLAYER_URL = /^https?:$/.test(location.protocol) ? new URL("./", location.href).href : "https://butwhy-cloud.github.io/2-truths-and-a-lie/";
     const customPeer = new URLSearchParams(location.search).get("peer");   // optional own PeerJS server "host:port"
-    // Relay server (TURN) for networks that block direct connections. RELAY_URL is a small relay service
-    // (for example the Cloudflare Worker in tools/relay-worker.js) and RELAY_KEY its access code. Fill them in only
-    // in a private copy of this file. The service hands out fresh relay details; the phones get its address and
-    // code through the QR link (after "#"), which never reaches a website. Leave empty to use PeerJS's settings.
+    // Relay server (TURN) for networks that block direct connections. RELAY_URL is the service that hands out
+    // fresh relay details, and RELAY_KEY its key: either the Cloudflare Worker in tools/relay-worker.js with your
+    // ACCESS_CODE, or Metered's https://<app>.metered.live/api/v1/turn/credentials with your Metered API key.
+    // Fill them in only in a private copy of this file. The phones get the address and key through the QR link
+    // (after "#"), which never reaches a website. Leave both empty to use PeerJS's settings.
     const RELAY_URL = "";
     const RELAY_KEY = "";
     let relay = null, relayState = RELAY_URL ? "laai" : "af";
+// Two kinds of relay service: our Cloudflare Worker (tools/relay-worker.js) takes "?key=" and answers
+    // { iceServers: [...] }; Metered's own credentials API (<app>.metered.live) takes "?apiKey=" and answers with the bare list.
+    const relayAddress = (url, key) => url + (url.includes("?") ? "&" : "?")
+      + (/\.metered\.live$/i.test(new URL(url).hostname) ? "apiKey=" : "key=") + encodeURIComponent(key);
+    const iceList = (data) => { const list = Array.isArray(data) ? data : data?.iceServers; return Array.isArray(list) && list.length ? list : null; };
     async function fetchRelay() {
       if (!RELAY_URL) return null;
       try {
-        const ask = fetch(RELAY_URL + (RELAY_URL.includes("?") ? "&" : "?") + "key=" + encodeURIComponent(RELAY_KEY), { cache: "no-store" });
+        const ask = fetch(relayAddress(RELAY_URL, RELAY_KEY), { cache: "no-store" });
         const res = await Promise.race([ask, new Promise((_, no) => setTimeout(() => no(new Error("timeout")), 6000))]);
         const data = await res.json();
-        relay = Array.isArray(data.iceServers) && data.iceServers.length ? { iceServers: data.iceServers, sdpSemantics: "unified-plan" } : null;
+        relay = iceList(data) ? { iceServers: iceList(data), sdpSemantics: "unified-plan" } : null;
       } catch { relay = null; }
       relayState = relay ? "aan" : "fout";
       return relay;
@@ -3542,7 +3548,7 @@ var qrcode = function() {
     function joinLink() {
       const url = new URL(game.playerUrl, location.href);
       url.searchParams.set("k", game.code);
-      url.searchParams.set("v", "202611081828");    // a new version is a new address, so phones never get an old stored copy
+      url.searchParams.set("v", "202611090739");    // a new version is a new address, so phones never get an old stored copy
       if (customPeer) url.searchParams.set("peer", customPeer);
       if (RELAY_URL) url.hash = new URLSearchParams({ relay: RELAY_URL, key: RELAY_KEY }).toString();   // after "#": stays on the phone
       return url.href;

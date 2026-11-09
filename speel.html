@@ -264,6 +264,11 @@
     return info;
   })();
 
+// Two kinds of relay service: our Cloudflare Worker (tools/relay-worker.js) takes "?key=" and answers
+  // { iceServers: [...] }; Metered's own credentials API (<app>.metered.live) takes "?apiKey=" and answers with the bare list.
+  const relayAddress = (url, key) => url + (url.includes("?") ? "&" : "?")
+    + (/\.metered\.live$/i.test(new URL(url).hostname) ? "apiKey=" : "key=") + encodeURIComponent(key);
+  const iceList = (data) => { const list = Array.isArray(data) ? data : data?.iceServers; return Array.isArray(list) && list.length ? list : null; };
   async function fetchRelay(info) {
     if (!info) return null;
     if (info.turn) {                           // older projector files: a fixed Metered login ("#turn=user:pass")
@@ -277,10 +282,10 @@
       ], sdpSemantics: "unified-plan" };
     }
     try {
-      const ask = fetch(info.url + (info.url.includes("?") ? "&" : "?") + "key=" + encodeURIComponent(info.key), { cache: "no-store" });
+      const ask = fetch(relayAddress(info.url, info.key), { cache: "no-store" });
       const res = await Promise.race([ask, new Promise((_, no) => setTimeout(() => no(new Error("timeout")), 6000))]);
       const data = await res.json();
-      return Array.isArray(data.iceServers) && data.iceServers.length ? { iceServers: data.iceServers, sdpSemantics: "unified-plan" } : null;
+      return iceList(data) ? { iceServers: iceList(data), sdpSemantics: "unified-plan" } : null;
     } catch { return null; }
   }
   const relayReady = fetchRelay(relayInfo);
