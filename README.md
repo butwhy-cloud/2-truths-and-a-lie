@@ -11,7 +11,7 @@ Open the game: [English](https://butwhy-cloud.github.io/2-truths-and-a-lie/proje
 ## How a round works
 
 1. The host picks a person. Their photo, name and three statements appear on the projector, and on every phone.
-2. Everyone taps the statement they think is the lie. The projector shows how many people have voted.
+2. Everyone taps the statement they think is the lie. They have 30 seconds, and the projector counts down and shows how many people have voted. When the time is up, voting closes.
 3. The person tells everyone which one was the lie, and the host taps that number.
 4. Each phone shows whether the player was right and how many points they got.
 
@@ -59,9 +59,9 @@ The spreadsheet has one row per person:
 
 ## Scoring
 
-A right answer is worth 100 points, minus one point for every second you take, but never less than 50. A wrong answer gets nothing.
+A right answer is worth 100 points, minus one point for every second you take. A wrong answer, or no answer in time, gets nothing.
 
-So a right answer after 2 seconds scores 98, and after 30 seconds it scores 70. The clock starts when the person appears on the screen and stops at your last tap, so you can change your mind, but it costs you a little time.
+Everyone has 30 seconds for each person, so a right answer scores between 70 and 100: after 2 seconds it scores 98, and just before the time runs out it scores 70. The clock starts when the person appears on the screen and stops at your last tap, so you can change your mind, but it costs you a little time.
 
 ## Results
 

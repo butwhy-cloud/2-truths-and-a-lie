@@ -198,6 +198,14 @@
   .live-pill.revealed { border-color: var(--pink); }
   .live-pill b { display: block; font: 800 54px/1 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
   .live-pill small { display: block; font: 600 21px/1.15 system-ui, sans-serif; color: #555; margin-top: 4px; }
+  /* while the clock runs: the seconds are big, the votes small, and a bar runs down along the bottom */
+  .live-pill::after {
+    content: ""; position: absolute; left: 18px; right: 18px; bottom: 5px; height: 6px; border-radius: 3px;
+    background: var(--green); transform: scaleX(var(--left, 0)); transform-origin: left; transition: transform .25s linear;
+  }
+  .live-pill.hurry { border-color: var(--pink); }
+  .live-pill.hurry b { color: var(--pink); }
+  .live-pill.hurry::after { background: var(--pink); }
   .vote .count {
     position: absolute; right: -16px; top: -16px;
     min-width: 56px; height: 56px; padding: 0 10px; border-radius: 28px;
@@ -312,7 +320,7 @@
     <div class="qr" id="qr"></div>
     <div>
       <h2>Play along on your phone!</h2>
-      <p class="rules">🎯 Pick the lie: the faster you pick right, the more points.</p>
+      <p class="rules">🎯 Pick the lie: the faster you pick right, the more points.<br>⏱ You have 30 seconds for each person.</p>
       <p>Scan the QR code, or go to</p>
       <p class="url" id="joinUrl"></p>
       <p>with the code:</p>
@@ -3268,6 +3276,11 @@ var qrcode = function() {
 
     // A right answer is worth 100 points, minus 1 for every second taken (never below 50). Wrong: 0.
     // Time runs from the moment the person appears on the card until the player's final tap.
+    // Everyone has 30 seconds per person (the rule on the join screens says so too). The laptop's clock decides;
+    // a vote that is still on its way when the time runs out gets a moment's grace for the network.
+    const TIME_LIMIT = 30000;
+    const timeLeft = (round) => (round && !round.lie ? Math.max(0, round.openedAt + TIME_LIMIT - Date.now()) : 0);
+
     function pointsIn(round, pid) {
       const vote = round.votes[pid];
       if (!round.lie || !vote || vote.c !== round.lie) return 0;
@@ -3366,7 +3379,7 @@ var qrcode = function() {
         top: game.ended ? table.filter((e) => e.rank <= 3).slice(0, 5).map((e) => ({ rank: e.rank, name: e.name, score: e.score, me: e.pid === pid })) : [],
         mine: game.ended ? (({ played, right, avg, best }) => ({ played, right, avg: avg == null ? null : secs(avg), best: best == null ? null : secs(best) }))(playerStats(pid)) : null,
         facts: game.ended ? (factsCache || []) : [],
-        round: round ? { n: person.n, name: person.name, statements: person.statements, lie: round.lie } : null,
+        round: round ? { n: person.n, name: person.name, statements: person.statements, lie: round.lie, left: timeLeft(round) } : null,
         myVote: round?.votes[pid]?.c || null,
         gained: round ? pointsIn(round, pid) : 0,
       };
@@ -3452,8 +3465,9 @@ var qrcode = function() {
         const round = person && game.rounds[person.n];
         const choice = Number(msg.choice);
         // votes can change until the lie is marked; speed is measured to the final choice
-        if (round && !round.lie && msg.round === person.n && [1, 2, 3].includes(choice) && round.votes[pid]?.c !== choice) {
-          round.votes[pid] = { c: choice, t: Date.now() - round.openedAt, ch: round.votes[pid] ? (round.votes[pid].ch || 0) + 1 : 0 };
+        const inTime = round && Date.now() - round.openedAt <= TIME_LIMIT + 1500;
+        if (round && !round.lie && inTime && msg.round === person.n && [1, 2, 3].includes(choice) && round.votes[pid]?.c !== choice) {
+          round.votes[pid] = { c: choice, t: Math.min(TIME_LIMIT, Date.now() - round.openedAt), ch: round.votes[pid] ? (round.votes[pid].ch || 0) + 1 : 0 };
           save();
           render();
         }
@@ -3549,11 +3563,43 @@ var qrcode = function() {
     function joinLink() {
       const url = new URL(game.playerUrl, location.href);
       url.searchParams.set("k", game.code);
-      url.searchParams.set("v", "202611090953");    // a new version is a new address, so phones never get an old stored copy
+      url.searchParams.set("v", "202611171923");    // a new version is a new address, so phones never get an old stored copy
       if (customPeer) url.searchParams.set("peer", customPeer);
       if (RELAY_URL) url.hash = new URLSearchParams({ relay: RELAY_URL, key: RELAY_KEY }).toString();   // after "#": stays on the phone
       return url.href;
     }
+
+    // The counter on the card. While the clock runs it shows the seconds left (big) and the votes (small);
+    // when the time is up, the votes; once the lie is marked, how many got it right.
+    function renderPill(online = [...conns.values()].filter((c) => c.open).length) {
+      const round = game.active && person && game.rounds[person.n];
+      pill.classList.toggle("on", !!round);
+      votes.forEach((v) => {
+        const count = v.querySelector(".count");
+        count.classList.toggle("on", !!round?.lie);
+        if (round) count.textContent = Object.values(round.votes).filter((x) => x.c === +v.dataset.n).length;
+      });
+      if (!round) return;
+      const cast = Object.keys(round.votes).length;
+      const right = Object.values(round.votes).filter((x) => x.c === round.lie).length;
+      const left = timeLeft(round);
+      const [big, small] = round.lie ? [`${right}/${cast}`, "guessed right"]
+        : left > 0 ? [`⏱ ${Math.ceil(left / 1000)}`, `${cast}/${Math.max(online, cast)} have voted`]
+        : [`${cast}/${Math.max(online, cast)}`, "time's up"];
+      const b = document.createElement("b"), sm = document.createElement("small");
+      b.textContent = big; sm.textContent = small;
+      pill.replaceChildren(b, sm);
+      pill.classList.toggle("revealed", !!round.lie);
+      pill.classList.toggle("hurry", left > 0 && left <= 5000);
+      pill.style.setProperty("--left", left / TIME_LIMIT);
+    }
+
+    // The clock: the counter ticks, and when the time runs out the phones hear it straight away.
+    setInterval(() => {
+      const round = game.active && person && game.rounds[person.n];
+      if (!round || round.lie || round.timeUp) return;
+      if (timeLeft(round) === 0) { round.timeUp = true; broadcast(); } else renderPill();
+    }, 250);
 
     function render(table = standings()) {
       const online = [...conns.values()].filter((c) => c.open).length;
@@ -3562,23 +3608,7 @@ var qrcode = function() {
       $("#boardBtn").hidden = !game.active;
       $("#endBtn").hidden = !game.active || !!game.ended;
 
-      // vote counter on the card, and how many picked each number once the lie is marked
-      const round = game.active && person && game.rounds[person.n];
-      pill.classList.toggle("on", !!round);
-      votes.forEach((v) => {
-        const count = v.querySelector(".count");
-        count.classList.toggle("on", !!round?.lie);
-        if (round) count.textContent = Object.values(round.votes).filter((x) => x.c === +v.dataset.n).length;
-      });
-      if (round) {
-        const cast = Object.keys(round.votes).length;
-        const right = Object.values(round.votes).filter((x) => x.c === round.lie).length;
-        const big = document.createElement("b"), small = document.createElement("small");
-        big.textContent = round.lie ? `${right}/${cast}` : `${cast}/${Math.max(online, cast)}`;
-        small.textContent = round.lie ? "guessed right" : "have voted";
-        pill.replaceChildren(big, small);
-        pill.classList.toggle("revealed", !!round.lie);
-      }
+      renderPill(online);
 
       if (!lobby.hidden) {
         $("#joinCode").textContent = game.code;
