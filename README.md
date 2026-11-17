@@ -11,9 +11,10 @@ Open the game: [English](https://butwhy-cloud.github.io/2-truths-and-a-lie/proje
 ## How a round works
 
 1. The host picks a person. Their photo, name and three statements appear on the projector, and on every phone.
-2. Everyone taps the statement they think is the lie. They have 30 seconds, and the projector counts down and shows how many people have voted. When the time is up, voting closes.
-3. The person tells everyone which one was the lie, and the host taps that number.
-4. Each phone shows whether the player was right and how many points they got.
+2. Everyone taps the statement they think is the lie. They have 30 seconds: a stopwatch on the projector and on every phone fills up as the time runs, and turns pink for the last 5 seconds. The projector also shows how many people have voted.
+3. At 0, voting closes. Whatever each player picked stays, and anyone who didn't pick gets no points for that person. If the lie is marked before the time is up, the clock simply stops.
+4. The person tells everyone which one was the lie, and the host taps that number.
+5. Each phone shows whether the player was right and how many points they got.
 
 When the host ends the game, the projector shows the final scores and a few fun facts, like the fastest player and the person whose lie fooled the most people. Every phone shows the player's own place and the top 3.
 

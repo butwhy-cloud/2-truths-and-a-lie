@@ -198,14 +198,29 @@
   .live-pill.revealed { border-color: var(--pink); }
   .live-pill b { display: block; font: 800 54px/1 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
   .live-pill small { display: block; font: 600 21px/1.15 system-ui, sans-serif; color: #555; margin-top: 4px; }
-  /* while the clock runs: the seconds are big, the votes small, and a bar runs down along the bottom */
-  .live-pill::after {
-    content: ""; position: absolute; left: 18px; right: 18px; bottom: 5px; height: 6px; border-radius: 3px;
-    background: var(--green); transform: scaleX(var(--left, 0)); transform-origin: left; transition: transform .25s linear;
+  /* The stopwatch: its face fills up clockwise as the time runs out; pink for the last 5 seconds. */
+  @property --used { syntax: "<number>"; inherits: true; initial-value: 0; }
+  .clock {
+    --clock-c: var(--green);
+    position: relative; flex: none; width: var(--size); height: var(--size); border-radius: 50%;
+    border: calc(var(--size) / 14) solid #161616; background: conic-gradient(var(--clock-c) calc(var(--used) * 1turn), #fff 0);
+    transition: --used .25s linear;
   }
+  .clock::before {   /* the button on top */
+    content: ""; position: absolute; left: 50%; top: calc(var(--size) / -5); width: calc(var(--size) / 4); height: calc(var(--size) / 7);
+    transform: translateX(-50%); border-radius: 3px 3px 0 0; background: #161616;
+  }
+  .clock::after {    /* the hand */
+    content: ""; position: absolute; left: 50%; bottom: 50%; width: calc(var(--size) / 14); height: 40%;
+    margin-left: calc(var(--size) / -28); border-radius: 2px; background: #161616;
+    transform-origin: 50% 100%; transform: rotate(calc(var(--used) * 1turn)); transition: transform .25s linear;
+  }
+  .hurry .clock { --clock-c: var(--pink); }
+  .live-pill .row { display: flex; align-items: center; justify-content: center; gap: 12px; }
+  .live-pill .clock { --size: 58px; margin-top: 8px; }
+  .live-pill .clock[hidden] { display: none; }
   .live-pill.hurry { border-color: var(--pink); }
   .live-pill.hurry b { color: var(--pink); }
-  .live-pill.hurry::after { background: var(--pink); }
   .vote .count {
     position: absolute; right: -16px; top: -16px;
     min-width: 56px; height: 56px; padding: 0 10px; border-radius: 28px;
@@ -282,7 +297,7 @@
   <div class="slot line fade" data-i="1" style="--d:150"></div>
   <div class="slot line fade" data-i="2" style="--d:300"></div>
   <img class="slot logo" id="logo" alt="" hidden>
-  <div class="slot live-pill" id="livePill"></div>
+  <div class="slot live-pill" id="livePill"><div class="row"><span class="clock" hidden></span><b></b></div><small></small></div>
   <button class="slot vote" data-n="1" style="--x:868;--c:var(--green)"  aria-label="Stelling 1 is die leuen"><span class="count"></span></button>
   <button class="slot vote" data-n="2" style="--x:1013;--c:var(--orange)" aria-label="Stelling 2 is die leuen"><span class="count"></span></button>
   <button class="slot vote" data-n="3" style="--x:1157;--c:var(--pink)"  aria-label="Stelling 3 is die leuen"><span class="count"></span></button>
@@ -3563,7 +3578,7 @@ var qrcode = function() {
     function joinLink() {
       const url = new URL(game.playerUrl, location.href);
       url.searchParams.set("k", game.code);
-      url.searchParams.set("v", "202611171926");    // a new version is a new address, so phones never get an old stored copy
+      url.searchParams.set("v", "202611171930");    // a new version is a new address, so phones never get an old stored copy
       if (customPeer) url.searchParams.set("peer", customPeer);
       if (RELAY_URL) url.hash = new URLSearchParams({ relay: RELAY_URL, key: RELAY_KEY }).toString();   // after "#": stays on the phone
       return url.href;
@@ -3584,14 +3599,14 @@ var qrcode = function() {
       const right = Object.values(round.votes).filter((x) => x.c === round.lie).length;
       const left = timeLeft(round);
       const [big, small] = round.lie ? [`${right}/${cast}`, "het reg geraai"]
-        : left > 0 ? [`⏱ ${Math.ceil(left / 1000)}`, `${cast}/${Math.max(online, cast)} het gestem`]
-        : [`${cast}/${Math.max(online, cast)}`, "tyd is om"];
-      const b = document.createElement("b"), sm = document.createElement("small");
-      b.textContent = big; sm.textContent = small;
-      pill.replaceChildren(b, sm);
+        : left > 0 ? [`${Math.ceil(left / 1000)}`, `${cast}/${Math.max(online, cast)} het gestem`]
+        : [`${cast}/${Math.max(online, cast)}`, "⏰ tyd is om"];
+      pill.querySelector("b").textContent = big;           // updated in place, so the clock moves smoothly
+      pill.querySelector("small").textContent = small;
+      pill.querySelector(".clock").hidden = !(left > 0);
       pill.classList.toggle("revealed", !!round.lie);
       pill.classList.toggle("hurry", left > 0 && left <= 5000);
-      pill.style.setProperty("--left", left / TIME_LIMIT);
+      pill.style.setProperty("--used", 1 - left / TIME_LIMIT);
     }
 
     // The clock: the counter ticks, and when the time runs out the phones hear it straight away.
