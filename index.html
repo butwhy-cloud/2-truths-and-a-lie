@@ -403,7 +403,8 @@
     const photo = photos.get(round.n);
     $("#who").hidden = !photo;
     if (photo) $("#who").src = photo;
-    if (!round.lie && round.n !== deadlineFor) { deadlineFor = round.n; deadline = Date.now() + round.left; }
+    if (round.left == null) deadline = Infinity;     // an older projector file: no time limit
+    else if (!round.lie && round.n !== deadlineFor) { deadlineFor = round.n; deadline = Date.now() + round.left; }
     else if (!round.lie && Math.abs(Date.now() + round.left - deadline) > 1500) deadline = Date.now() + round.left;   // keep in step with the laptop
     const timeUp = !round.lie && Date.now() >= deadline;
     choices.classList.toggle("locked", !!round.lie);
@@ -580,7 +581,7 @@
   let deadline = 0, deadlineFor = null;
   function tick() {
     const round = state?.round;
-    const show = !!round && !round.lie && !state.final;
+    const show = !!round && !round.lie && !state.final && deadline !== Infinity;
     $("#timer").hidden = !show;
     if (!show) return;
     const left = Math.max(0, deadline - Date.now());

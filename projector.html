@@ -3563,7 +3563,7 @@ var qrcode = function() {
     function joinLink() {
       const url = new URL(game.playerUrl, location.href);
       url.searchParams.set("k", game.code);
-      url.searchParams.set("v", "202611171923");    // a new version is a new address, so phones never get an old stored copy
+      url.searchParams.set("v", "202611171926");    // a new version is a new address, so phones never get an old stored copy
       if (customPeer) url.searchParams.set("peer", customPeer);
       if (RELAY_URL) url.hash = new URLSearchParams({ relay: RELAY_URL, key: RELAY_KEY }).toString();   // after "#": stays on the phone
       return url.href;
