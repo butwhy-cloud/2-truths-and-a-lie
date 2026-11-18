@@ -130,6 +130,17 @@ With either option, the QR code gives the phones the relay address and key after
 
 Anyone who has the link can use your relay while they have it, just like they can join the game. If you want, change the access code (Cloudflare) or the API key (Metered) after a session.
 
+### Sharing your relay with another group
+
+You can let a school or club use your Cloudflare relay without giving them your own code, and switch them off again on their own:
+
+1. In the Worker's **Settings → Variables and Secrets**, add a **Secret** called `ACCESS_CODES` with one code per group, separated by commas, like `school-7k2m, club-9x4q`. Your own `ACCESS_CODE` keeps working. (The Worker needs the latest [`tools/relay-worker.js`](tools/relay-worker.js).)
+2. Send the group their relay link privately, for example: `https://butwhy-cloud.github.io/2-truths-and-a-lie/projector.html#relay=https://<your-worker>.workers.dev/&key=school-7k2m`
+3. They open it once on the computer they host on. The game remembers it there and says **🔁 The relay is now on for this computer**. With the downloaded game file, they paste the link on the join screen under **🔁 Relay link…** instead.
+4. To stop a group, remove its code from `ACCESS_CODES`. Their game then simply plays without a relay.
+
+The link is stored only in that computer's browser. Pasting an empty link under **🔁 Relay link…** removes it.
+
 ## Controls
 
 | To do this | Click | Or press |
@@ -148,7 +159,14 @@ Anyone who has the link can use your relay while they have it, just like they ca
 
 You can fork this repository and switch on GitHub Pages (Settings → Pages → `main` branch). Your copy then works straight away at `https://<your-name>.github.io/<repo>/projector.html`, and its QR code points to your own phone page.
 
-The card picture is built into `projector.html`. To use your own design, keep the same layout (photo on the left, three bars on the right, name under the photo, 1-2-3 circles at the bottom) and swap the picture.
+## Your own card
+
+The game has its own card built in, but you can use any picture as the card.
+
+- **Ready-made cards:** [`templates/cards/`](templates/cards/) has a Christmas card in English and Afrikaans, and a navy-and-gold card in Afrikaans. Download one, name it `card.jpg` (the guide's buttons do that for you) and put it in your folder. These cards carry their own layout, so they work straight away.
+- **Your own design:** name the picture `card` or `kaart` (for example `card.jpg` or `kaart skool.png`) and put it in your folder. The first time you choose the folder, the game shows your card with boxes. Drag them onto the spots for the photo, the name, the three statements, the 1-2-3 circles and the vote counter, and click **💾 Save layout**. Save `card.json` in the same folder and the game uses it from then on. Click **🎨** in the bar to change it later.
+
+Keep only one card picture in the folder. Any shape works (the ready-made cards are 16:9), and printing fits it onto an A4 page.
 
 ## How it works
 
@@ -167,7 +185,7 @@ We tested it with 100 simulated players on one laptop. Everyone joined within a 
 | `speel.html` | The page players open on their phones (Afrikaans) |
 | `guide.html`, `gids.html` | The step-by-step guide, in English and Afrikaans |
 | `guide.pdf`, `gids.pdf` | The same guide as a PDF to print |
-| `templates/` | Empty spreadsheets to fill in (`statements.xlsx`, `stellings.xlsx`) |
+| `templates/` | Empty spreadsheets to fill in (`statements.xlsx`, `stellings.xlsx`), and ready-made cards in `templates/cards/` |
 | `example/`, `voorbeeld/` | Example folders with a spreadsheet, photos and a logo |
 | `tools/relay-worker.js` | A small Cloudflare Worker that hands out relay details (see *Option 1: Cloudflare*) |
 | `docs/` | Pictures for this page and the guide |

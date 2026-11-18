@@ -7,10 +7,15 @@
 //        TURN_KEY_ID        the Turn Token ID from step 1
 //        TURN_KEY_API_TOKEN the API Token from step 1
 //        ACCESS_CODE        a password of your own choosing (letters and numbers)
-//   4. Put the Worker's address and your ACCESS_CODE in a private copy of the projector page
-//      (RELAY_URL and RELAY_KEY). Never put them, or these secrets, in a public repository.
+//      Optional, to share the relay with other groups (a school, a club):
+//        ACCESS_CODES       more codes, one per group, separated by commas (e.g. "hartenbos-7k2m, sportklub-9x4q").
+//                           To switch one group off, remove its code. Your own ACCESS_CODE keeps working.
+//   4. Either put the Worker's address and a code in a private copy of the projector page (RELAY_URL and
+//      RELAY_KEY), or give a group a relay link: <game page>#relay=<worker address>&key=<their code>.
+//      Opening that link once switches the relay on for that computer.
+//      Never put the codes, or these secrets, in a public repository.
 //
-// The game asks:  GET <worker address>?key=<ACCESS_CODE>
+// The game asks:  GET <worker address>?key=<code>
 // and gets back:  { "iceServers": [ ... ] }   (valid for 24 hours)
 
 export default {
@@ -24,7 +29,8 @@ export default {
     if (request.method === "OPTIONS") return new Response(null, { headers: cors });
 
     const key = new URL(request.url).searchParams.get("key");
-    if (!env.ACCESS_CODE || key !== env.ACCESS_CODE) {
+    const codes = [env.ACCESS_CODE, ...String(env.ACCESS_CODES || "").split(/[\s,;]+/)].map((c) => String(c || "").trim()).filter(Boolean);
+    if (!key || !codes.includes(key)) {
       return new Response(JSON.stringify({ error: "wrong access code" }), { status: 403, headers: cors });
     }
 
