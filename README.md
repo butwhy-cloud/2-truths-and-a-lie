@@ -1,6 +1,6 @@
 # 2 Truths & a Lie
 
-A live version of the classic party game for classrooms, team days and youth groups. Each person's photo and three statements go up on the projector, and everyone guesses the lie on their own phone. Quick right answers score the most points.
+A live version of the classic party game for classrooms, team days and youth groups. Each person's photo and three statements appear on every phone (and on a projector or big screen, if you have one), and everyone guesses the lie on their own phone. Quick right answers score the most points.
 
 You don't need to install anything or create any accounts. The game runs in the browser on the host's laptop, and players join by scanning a QR code.
 
@@ -8,17 +8,17 @@ You don't need to install anything or create any accounts. The game runs in the 
 
 Open the game: [English](https://butwhy-cloud.github.io/2-truths-and-a-lie/projector.html) · [Afrikaans](https://butwhy-cloud.github.io/2-truths-and-a-lie/projektor.html)
 
-**New to this? Follow the step-by-step guide:** [English](https://butwhy-cloud.github.io/2-truths-and-a-lie/guide.html) ([PDF](guide.pdf)) · [Afrikaans](https://butwhy-cloud.github.io/2-truths-and-a-lie/gids.html) ([PDF](gids.pdf)). It walks you through downloading the game, filling in the spreadsheet, adding photos and playing, with a picture for every step.
+**New to this? Follow the step-by-step guide:** [English](https://butwhy-cloud.github.io/2-truths-and-a-lie/guide.html) ([PDF](guide.pdf)) · [Afrikaans](https://butwhy-cloud.github.io/2-truths-and-a-lie/gids.html) ([PDF](gids.pdf)). In 8 short steps it walks you through downloading the game, filling in the spreadsheet, adding photos and playing.
 
 ## How a round works
 
 1. The host picks a person. Their photo, name and three statements appear on every phone, and on the projector if there is one. (The person on the card knows the lie, so they sit that round out.)
-2. Everyone taps the statement they think is the lie. They have 30 seconds: a stopwatch on the projector and on every phone fills up as the time runs, and turns pink for the last 5 seconds. The projector also shows how many people have voted.
+2. Everyone taps the statement they think is the lie. They have 30 seconds: a stopwatch on the host's screen and on every phone fills up as the time runs, and turns pink for the last 5 seconds. The host's screen also shows how many people have voted.
 3. At 0, voting closes. Whatever each player picked stays, and anyone who didn't pick gets no points for that person. If the host marks the lie before the time is up, the clock stops and so does voting, so it's best to wait for the countdown or until everyone has voted.
-4. The person tells everyone which one was the lie, and the host taps that number.
+4. The person tells everyone which one was the lie, and the host clicks that number on the card. (After the 30 seconds, the 1, 2 and 3 on the card pulse.)
 5. Each phone shows whether the player was right and how many points they got.
 
-When the host ends the game, the projector shows the final scores and a few fun facts, like the fastest player and the person whose lie fooled the most people. Every phone shows the player's own place and the top 3.
+When the host ends the game, the host's screen shows the final scores and a few fun facts, like the fastest player and the person whose lie fooled the most people. Every phone shows the player's own place and the top 3.
 
 ![Phones: waiting, voting, the result and the end of the game](docs/phones.jpg)
 
@@ -28,16 +28,16 @@ You'll need a computer or laptop with Chrome or Edge to host the game (not a pho
 
 1. Make a folder with a spreadsheet and photos. Start from the empty spreadsheet ([`templates/statements.xlsx`](templates/statements.xlsx), or [`stellings.xlsx`](templates/stellings.xlsx) in Afrikaans), or copy an example folder: [`example`](example/) or [`voorbeeld`](voorbeeld/).
 2. Open the game ([English](https://butwhy-cloud.github.io/2-truths-and-a-lie/projector.html) or [Afrikaans](https://butwhy-cloud.github.io/2-truths-and-a-lie/projektor.html)) and click **Choose the folder**.
-3. Click **📱 Live** and then **Switch live on**. A QR code and a 4-letter code appear for the players.
-4. When everyone has joined, click **Start** and pick the first person.
+3. Click **📱 Live** and then **Switch live on**. When it says **Ready: players can join**, players scan the QR code (or open the link and type the 4-letter code).
+4. When everyone has joined, click **Start ▶** and pick the first person.
 
-Try it with two or three phones before the real thing. Some school and office networks block this kind of connection, and mobile data usually works when Wi-Fi doesn't.
+Try it with two or three phones before the real thing. Phones join most easily on the same Wi-Fi as the computer. Phones on mobile data, and some school and office Wi-Fi, need a relay (see *Playing across different networks*).
 
 ![The join screen with the QR code](docs/join.jpg)
 
 ## The folder
 
-The game needs a spreadsheet and, if you like, photos and a logo, all in one folder:
+The game needs a spreadsheet and, if you like, photos, a logo and a card picture, all in one folder. Keep only one statements spreadsheet in it:
 
 ```
 example/
@@ -45,7 +45,8 @@ example/
 ├── person 1.jpg
 ├── person 2.jpg
 ├── person 3.jpg
-└── logo.png        (optional)
+├── logo.png        (optional)
+└── card.jpg        (optional, see *Your own card*)
 ```
 
 The spreadsheet has one row per person:
@@ -68,7 +69,7 @@ Everyone has 30 seconds for each person, so a right answer scores between 70 and
 
 ## Results
 
-When the game ends, the results are saved as a spreadsheet in your folder. You can also save a results page with the podium, the fun facts and everyone's points and times, which is handy for sharing afterwards.
+When the game ends, a Save window opens so you can keep the results as a spreadsheet in your folder (Chrome and Edge; other browsers put it in Downloads). You can also save a results page with the podium, the fun facts and everyone's points and times, which is handy for sharing afterwards.
 
 ![The results page](docs/results.jpg)
 
@@ -91,7 +92,7 @@ How players can join depends on the networks they're on:
 | Players are on | What you need |
 |---|---|
 | The same Wi-Fi as the laptop (or a phone hotspot the laptop is on too) | Nothing extra. This works out of the box. |
-| Mobile data, or a different Wi-Fi | Your own relay server (TURN), from Cloudflare or Metered. |
+| Mobile data, a different Wi-Fi, or Wi-Fi that blocks devices from reaching each other (common on guest, school and office Wi-Fi) | A relay server (TURN): your own from Cloudflare or Metered, or a relay link from someone who has one. |
 
 Most mobile and school networks don't let a phone connect straight to a laptop. The connection then has to go through a relay server. PeerJS has a free shared one, but it's used by everyone and in practice only lets one phone on mobile data in at a time.
 
@@ -110,8 +111,8 @@ A player uses roughly 0.5 to 1 MB per game through the relay.
 1. In the Cloudflare dashboard, go to **Realtime → TURN Server** and create a TURN key. Note the **Turn Token ID** and the **API Token**.
 2. Go to **Workers & Pages → Create** and choose **Start with Hello World!** (not a GitHub repository). Name it, deploy it, then **Edit code**: replace everything with [`tools/relay-worker.js`](tools/relay-worker.js) and deploy again.
 3. In the Worker's **Settings → Variables and Secrets**, add three variables of type **Secret** (not Text): `TURN_KEY_ID` and `TURN_KEY_API_TOKEN` (from step 1), and `ACCESS_CODE` (a password of your own). Leave **Cloudflare Access** switched off for this Worker: the players' phones need to reach it without logging in, and the access code already protects it.
-4. Make a **private** copy of `projector.html` (or `projektor.html`), search for `RELAY_URL` and `RELAY_KEY`, and fill in your Worker's address and your access code. Keep that copy on your laptop and don't put it in a public repository.
-5. Open your copy. The join screen should say **🔁 Relay: on**.
+4. Switch it on for your computer with a relay link: open `https://butwhy-cloud.github.io/2-truths-and-a-lie/projector.html#relay=https://<your-worker>.workers.dev/&key=<your ACCESS_CODE>` once (with the downloaded game file, paste that link on the join screen under **🔁 Relay link…** instead). Or make a **private** copy of the game file with your Worker's address and code filled in at `RELAY_URL` and `RELAY_KEY`, and keep it off any public repository.
+5. The join screen should say **🔁 Relay: on**.
 
 The Worker hands out fresh relay details that last a day, so the Cloudflare key never leaves Cloudflare.
 
@@ -119,12 +120,8 @@ The Worker hands out fresh relay details that last a day, so the Cloudflare key 
 
 1. Sign up at [metered.ca](https://www.metered.ca) and create an app on the free plan. Your app gets an address that ends in `.metered.live`.
 2. In the dashboard, find the API key for your TURN credentials.
-3. Make a **private** copy of `projector.html` (or `projektor.html`) and fill in:
-   - `RELAY_URL`: `https://<your-app>.metered.live/api/v1/turn/credentials`
-   - `RELAY_KEY`: your API key
-
-   Keep that copy on your laptop and don't put it in a public repository.
-4. Open your copy. The join screen should say **🔁 Relay: on**.
+3. Switch it on with a relay link: open `https://butwhy-cloud.github.io/2-truths-and-a-lie/projector.html#relay=https://<your-app>.metered.live/api/v1/turn/credentials&key=<your API key>` once (with the downloaded game file, paste it under **🔁 Relay link…** instead). Or make a **private** copy of the game file with those two values at `RELAY_URL` and `RELAY_KEY`, and keep it off any public repository.
+4. The join screen should say **🔁 Relay: on**.
 
 Metered hands out relay details for your app, and the game picks the right servers for your plan by itself. When the free 500 MB runs out, the relay stops until the next month, or until you upgrade.
 
@@ -158,6 +155,7 @@ The link is stored only in that computer's browser. Pasting an empty link under 
 | Start a completely new game | ✕ | Esc |
 | Print a page per person | 🖨 | Ctrl+P |
 | Full screen | ⛶ | F |
+| Change the card's layout (own card only) | 🎨 | |
 
 ## Using it for your own group
 
@@ -175,7 +173,6 @@ Keep only one card picture in the folder. Any shape works (the ready-made cards 
 ## How it works
 
 The host's laptop runs the game. Phones connect to it directly over an encrypted connection (WebRTC), and a free service called [PeerJS](https://peerjs.com) only helps them find each other.
-
 
 We tested it with 100 simulated players on one laptop. Everyone joined within a few seconds and results reached every phone almost instantly. With real phones, the network matters more than the number of players.
 
