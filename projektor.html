@@ -112,7 +112,7 @@
   #dock {
     position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%);
     display: flex; align-items: center; gap: 6px;
-    max-width: calc(100vw - 32px);
+    width: max-content; max-width: calc(100vw - 32px);   /* without max-content, "left: 50%" caps it at half the screen */
     padding: 8px 10px;
     background: rgba(255,255,255,.95);
     border: 1px solid #e3e3e3; border-radius: 999px;
@@ -122,7 +122,7 @@
   }
   body.idle #dock { opacity: 0; transform: translate(-50%, 12px); pointer-events: none; }
   body.idle { cursor: none; }
-  #people { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; max-width: 46vw; }
+  #people { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; max-width: 46vw; min-width: 126px; }
   #people::-webkit-scrollbar { display: none; }
   #dock button {
     flex: none; min-width: 38px; height: 38px; padding: 0 12px;
@@ -2807,7 +2807,8 @@ var qrcode = function() {
    * ===================================================================== */
 
   const EXTENSIONS = ["jpg", "jpeg", "png", "webp", "JPG", "JPEG", "PNG"];
-  const key = (s) => s.toLowerCase().replace(/\.[^.]+$/, "").replace(/[\s_\-]+/g, "");
+  // "Person 1.JPG", "person_1.png" and "person 1.jpg.jpg" (typed ".jpg" while Windows hides the ending) all match "person 1"
+  const key = (s) => s.toLowerCase().replace(/(\.(jpe?g|png|webp|gif|svg|heic|heif|avif|bmp))+$/, "").replace(/[\s_\-]+/g, "");
   const chosenPhotos = new Map();     // key("person 7") → object URL
   const photoCache = new Map();       // person number → url | null
 
@@ -3578,7 +3579,7 @@ var qrcode = function() {
     function joinLink() {
       const url = new URL(game.playerUrl, location.href);
       url.searchParams.set("k", game.code);
-      url.searchParams.set("v", "202611171930");    // a new version is a new address, so phones never get an old stored copy
+      url.searchParams.set("v", "202611180907");    // a new version is a new address, so phones never get an old stored copy
       if (customPeer) url.searchParams.set("peer", customPeer);
       if (RELAY_URL) url.hash = new URLSearchParams({ relay: RELAY_URL, key: RELAY_KEY }).toString();   // after "#": stays on the phone
       return url.href;

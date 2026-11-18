@@ -8,6 +8,8 @@ You don't need to install anything or create any accounts. The game runs in the 
 
 Open the game: [English](https://butwhy-cloud.github.io/2-truths-and-a-lie/projector.html) · [Afrikaans](https://butwhy-cloud.github.io/2-truths-and-a-lie/projektor.html)
 
+**New to this? Follow the step-by-step guide:** [English](https://butwhy-cloud.github.io/2-truths-and-a-lie/guide.html) ([PDF](guide.pdf)) · [Afrikaans](https://butwhy-cloud.github.io/2-truths-and-a-lie/gids.html) ([PDF](gids.pdf)). It walks you through downloading the game, filling in the spreadsheet, adding photos and playing, with a picture for every step.
+
 ## How a round works
 
 1. The host picks a person. Their photo, name and three statements appear on the projector, and on every phone.
@@ -24,7 +26,7 @@ When the host ends the game, the projector shows the final scores and a few fun 
 
 You'll need a laptop with Chrome or Edge, a projector, and internet on the laptop and the phones (Wi-Fi or mobile data).
 
-1. Make a folder with a spreadsheet and photos. The easiest way is to copy the example folder: [`example`](example/) for English, or [`voorbeeld`](voorbeeld/) for Afrikaans.
+1. Make a folder with a spreadsheet and photos. Start from the empty spreadsheet ([`templates/statements.xlsx`](templates/statements.xlsx), or [`stellings.xlsx`](templates/stellings.xlsx) in Afrikaans), or copy an example folder: [`example`](example/) or [`voorbeeld`](voorbeeld/).
 2. Open the game ([English](https://butwhy-cloud.github.io/2-truths-and-a-lie/projector.html) or [Afrikaans](https://butwhy-cloud.github.io/2-truths-and-a-lie/projektor.html)) and click **Choose the folder**.
 3. Click **📱 Live** and then **Switch live on**. A QR code and a 4-letter code appear for the players.
 4. When everyone has joined, click **Start** and pick the first person.
@@ -163,9 +165,12 @@ We tested it with 100 simulated players on one laptop. Everyone joined within a 
 | `index.html` | The page players open on their phones (English) |
 | `projektor.html` | The game, in Afrikaans |
 | `speel.html` | The page players open on their phones (Afrikaans) |
+| `guide.html`, `gids.html` | The step-by-step guide, in English and Afrikaans |
+| `guide.pdf`, `gids.pdf` | The same guide as a PDF to print |
+| `templates/` | Empty spreadsheets to fill in (`statements.xlsx`, `stellings.xlsx`) |
 | `example/`, `voorbeeld/` | Example folders with a spreadsheet, photos and a logo |
 | `tools/relay-worker.js` | A small Cloudflare Worker that hands out relay details (see *Option 1: Cloudflare*) |
-| `docs/` | Pictures for this page |
+| `docs/` | Pictures for this page and the guide |
 
 ## Good to know
 
