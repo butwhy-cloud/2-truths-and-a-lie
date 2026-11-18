@@ -1,0 +1,42 @@
+# Keeps the "downloads" release up to date with the files the guide's buttons hand out.
+# A file in a GitHub release downloads straight away when its link is clicked (also from a PDF),
+# while a file on GitHub Pages opens in the browser. Runs by itself whenever one of these files changes.
+name: Downloads
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - projector.html
+      - projektor.html
+      - templates/**
+      - .github/workflows/downloads.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262   # v4.4.0, locked to this exact version
+
+      - name: Gather the files under the names people will see
+        run: |
+          mkdir out
+          cp projector.html  "out/2-Truths-and-a-Lie.html"
+          cp projektor.html  "out/2-Waarhede-en-n-Leuen.html"
+          cp templates/statements.xlsx templates/stellings.xlsx out/
+          cp templates/cards/*.jpg out/
+          ls -l out
+
+      - name: Update the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view downloads >/dev/null 2>&1; then
+            gh release create downloads --title "Downloads" --latest \
+              --notes "The files the step-by-step guide's buttons download: the game (English and Afrikaans), the empty spreadsheets and the ready-made cards. Updated automatically. Guide: https://butwhy-cloud.github.io/2-truths-and-a-lie/guide.html"
+          fi
+          gh release upload downloads out/* --clobber

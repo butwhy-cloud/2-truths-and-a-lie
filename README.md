@@ -78,6 +78,10 @@ Your spreadsheet, photos and results stay on the host's laptop. Nothing is uploa
 
 When the game ends, everyone is disconnected and the laptop and phones forget the game. The only thing left is the results file you saved. Every game gets a new code, and the host can remove anyone who shouldn't be there.
 
+The services the game uses keep the ordinary server logs any website does, never game content. GitHub, which hosts these pages, logs visitors' IP addresses for security (see the [GitHub Privacy Statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement)). The PeerJS service that introduces the phones to the laptop, and the relay server if you use one, see network addresses too.
+
+If you play with children, use their names and photos only with permission, for example a parent's or guardian's. In South Africa that's what POPIA asks of the school or club running the game. The results file you save has players' nicknames and scores, so keep it only as long as you need it.
+
 Chrome may say it's "uploading" files when you pick the folder. That's just how Chrome describes giving a page access to a folder. The files are only read on the laptop.
 
 ## Playing across different networks
