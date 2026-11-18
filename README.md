@@ -193,6 +193,8 @@ We tested it with 100 simulated players on one laptop. Everyone joined within a 
 | `example/`, `voorbeeld/` | Example folders with a spreadsheet, photos and a logo |
 | `tools/relay-worker.js` | A small Cloudflare Worker that hands out relay details (see *Option 1: Cloudflare*) |
 | `docs/` | Pictures for this page and the guide |
+| `SECURITY.md` | How to report a security or privacy problem, and what the game keeps |
+| `.github/workflows/downloads.yml` | Keeps the [downloads release](https://github.com/butwhy-cloud/2-truths-and-a-lie/releases/tag/downloads) up to date, so the PDF guide's buttons download files directly |
 
 ## Good to know
 
