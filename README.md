@@ -12,9 +12,9 @@ Open the game: [English](https://butwhy-cloud.github.io/2-truths-and-a-lie/proje
 
 ## How a round works
 
-1. The host picks a person. Their photo, name and three statements appear on the projector, and on every phone.
+1. The host picks a person. Their photo, name and three statements appear on every phone, and on the projector if there is one. (The person on the card knows the lie, so they sit that round out.)
 2. Everyone taps the statement they think is the lie. They have 30 seconds: a stopwatch on the projector and on every phone fills up as the time runs, and turns pink for the last 5 seconds. The projector also shows how many people have voted.
-3. At 0, voting closes. Whatever each player picked stays, and anyone who didn't pick gets no points for that person. If the lie is marked before the time is up, the clock simply stops.
+3. At 0, voting closes. Whatever each player picked stays, and anyone who didn't pick gets no points for that person. If the host marks the lie before the time is up, the clock stops and so does voting, so it's best to wait for the countdown or until everyone has voted.
 4. The person tells everyone which one was the lie, and the host taps that number.
 5. Each phone shows whether the player was right and how many points they got.
 
@@ -58,7 +58,7 @@ The spreadsheet has one row per person:
 - The headings can be in English (`Name`, `Statement 1`–`3`) or Afrikaans (`Naam`, `Stelling 1`–`3`). Their order doesn't matter, and other columns are ignored.
 - The `Person 1`, `Person 2`… column links each row to its photo, `person 1.jpg`, `person 2.jpg` and so on. A photo can also be named after the person, like `Alex.jpg`.
 - Don't put the lie in the spreadsheet. Each person tells the group during the game.
-- Add a `logo.png` and your school's or company's logo appears in the corner of the card.
+- Add a `logo.png` and your school's or company's logo appears in the corner of the built-in card. Other cards have no spot for it, so put the logo in the card picture itself (see *Your own card*).
 
 ## Scoring
 
