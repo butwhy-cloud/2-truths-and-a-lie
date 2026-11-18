@@ -92,6 +92,12 @@
     transition: opacity .2s, transform .2s;
   }
   .vote:hover::after { opacity: .35; transform: scale(1); }
+  /* time is up and the lie isn't marked yet: the three numbers pulse, so the host sees where to click */
+  .card.await-lie .vote:not(.picked)::after {
+    border-color: var(--c); box-shadow: 0 0 0 7px #fff, 0 0 26px 10px rgba(0,0,0,.35);
+    animation: ask 1.3s ease-in-out infinite;
+  }
+  @keyframes ask { 0%, 100% { opacity: .35; transform: scale(1.02); } 50% { opacity: 1; transform: scale(1.16); } }
   .vote.picked { animation: wiggle .5s ease; }
   .vote.picked::after { opacity: 1; transform: scale(1.12); box-shadow: 0 0 0 10px #fff, 0 0 0 16px var(--c); }
   @keyframes wiggle {
@@ -3950,7 +3956,7 @@ var qrcode = function() {
     function joinLink() {
       const url = new URL(game.playerUrl, location.href);
       url.searchParams.set("k", game.code);
-      url.searchParams.set("v", "202611181745");    // a new version is a new address, so phones never get an old stored copy
+      url.searchParams.set("v", "202611181808");    // a new version is a new address, so phones never get an old stored copy
       if (customPeer) url.searchParams.set("peer", customPeer);
       if (relayConfig) url.hash = new URLSearchParams({ relay: relayConfig.url, key: relayConfig.key }).toString();   // after "#": stays on the phone
       return url.href;
@@ -3966,18 +3972,19 @@ var qrcode = function() {
         count.classList.toggle("on", !!round?.lie);
         if (round) count.textContent = Object.values(round.votes).filter((x) => x.c === +v.dataset.n).length;
       });
-      if (!round) return;
+      if (!round) return card.classList.remove("await-lie");
       const cast = Object.keys(round.votes).length;
       const right = Object.values(round.votes).filter((x) => x.c === round.lie).length;
       const left = timeLeft(round);
       const [big, small] = round.lie ? [`${right}/${cast}`, "het reg geraai"]
         : left > 0 ? [`${Math.ceil(left / 1000)}`, `${cast}/${Math.max(online, cast)} het gestem`]
-        : [`${cast}/${Math.max(online, cast)}`, "⏰ tyd is om"];
+        : [`${cast}/${Math.max(online, cast)}`, "⏰ klik die leuen"];
       pill.querySelector("b").textContent = big;           // updated in place, so the clock moves smoothly
       pill.querySelector("small").textContent = small;
       pill.querySelector(".clock").hidden = !(left > 0);
       pill.classList.toggle("revealed", !!round.lie);
       pill.classList.toggle("hurry", left > 0 && left <= 5000);
+      card.classList.toggle("await-lie", !round.lie && left === 0);
       pill.style.setProperty("--used", 1 - left / TIME_LIMIT);
     }
 
