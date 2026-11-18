@@ -24,7 +24,7 @@ When the host ends the game, the projector shows the final scores and a few fun 
 
 ## Getting started
 
-You'll need a laptop with Chrome or Edge, a projector, and internet on the laptop and the phones (Wi-Fi or mobile data).
+You'll need a computer or laptop with Chrome or Edge to host the game (not a phone or tablet), a projector or big screen if you have one, and internet on the computer and the phones.
 
 1. Make a folder with a spreadsheet and photos. Start from the empty spreadsheet ([`templates/statements.xlsx`](templates/statements.xlsx), or [`stellings.xlsx`](templates/stellings.xlsx) in Afrikaans), or copy an example folder: [`example`](example/) or [`voorbeeld`](voorbeeld/).
 2. Open the game ([English](https://butwhy-cloud.github.io/2-truths-and-a-lie/projector.html) or [Afrikaans](https://butwhy-cloud.github.io/2-truths-and-a-lie/projektor.html)) and click **Choose the folder**.
