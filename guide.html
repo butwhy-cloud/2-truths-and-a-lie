@@ -82,8 +82,8 @@ footer { text-align: center; color: var(--muted); font-size: 15px; margin-top: 2
   .links .pdf { display: none; }
   .print-only { display: block; }
   .part { break-after: avoid; }
-  .pair { grid-template-columns: 1fr 112px; gap: 10px; }
-  img.screen { max-height: 250px; object-fit: contain; object-position: left top; width: auto; max-width: 100%; }
+  .pair { grid-template-columns: 1fr 92px; gap: 10px; }
+  img.screen { max-height: 205px; object-fit: contain; object-position: left top; width: auto; max-width: 100%; }
   img.phone { border-width: 4px; border-radius: 14px; }
   .step { padding: 12px 14px; margin: 9px 0; grid-template-columns: 44px 1fr; gap: 12px; }
   .num { width: 44px; height: 44px; font-size: 27px; }
@@ -96,7 +96,8 @@ footer { text-align: center; color: var(--muted); font-size: 15px; margin-top: 2
   header h1 { font-size: 44px; }
   .sheet { font-size: 12px; margin: 8px 0; }
   .net, .tip, .num, .dl a, .sheet .keep, .sheet td.p, .sheet thead th, .legend .sw { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  @page { size: A4; margin: 14mm 12mm; }
+  footer { margin-top: 6px; break-before: avoid; }
+  @page { size: A4; margin: 12mm 12mm; }
 }
 </style>
 </head>
