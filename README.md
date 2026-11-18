@@ -58,7 +58,7 @@ The spreadsheet has one row per person:
 - The headings can be in English (`Name`, `Statement 1`–`3`) or Afrikaans (`Naam`, `Stelling 1`–`3`). Their order doesn't matter, and other columns are ignored.
 - The `Person 1`, `Person 2`… column links each row to its photo, `person 1.jpg`, `person 2.jpg` and so on. A photo can also be named after the person, like `Alex.jpg`.
 - Don't put the lie in the spreadsheet. Each person tells the group during the game.
-- Add a `logo.png` and your school's or company's logo appears in the corner of the built-in card. Other cards have no spot for it, so put the logo in the card picture itself (see *Your own card*).
+- Add a `logo.png` and your school's or company's logo appears on the card: in the corner of the built-in card, in a free corner of the ready-made cards, and wherever you put it on a card of your own (see *Your own card*).
 
 ## Scoring
 
@@ -163,8 +163,8 @@ You can fork this repository and switch on GitHub Pages (Settings → Pages → 
 
 The game has its own card built in, but you can use any picture as the card.
 
-- **Ready-made cards:** [`templates/cards/`](templates/cards/) has a Christmas card in English and Afrikaans, and a navy-and-gold card in Afrikaans. Download one, name it `card.jpg` (the guide's buttons do that for you) and put it in your folder. These cards carry their own layout, so they work straight away.
-- **Your own design:** name the picture `card` or `kaart` (for example `card.jpg` or `kaart skool.png`) and put it in your folder. The first time you choose the folder, the game shows your card with boxes. Drag them onto the spots for the photo, the name, the three statements, the 1-2-3 circles and the vote counter, and click **💾 Save layout**. Save `card.json` in the same folder and the game uses it from then on. Click **🎨** in the bar to change it later.
+- **Ready-made cards:** [`templates/cards/`](templates/cards/) has a Christmas card in English and Afrikaans, and a navy-and-gold card in Afrikaans. Download one and put it in your folder; its name already starts with `card` or `kaart`, which is how the game recognises it. These cards carry their own layout, so they work straight away.
+- **Your own design:** name the picture `card` or `kaart` (for example `card.jpg` or `kaart skool.png`) and put it in your folder. The first time you choose the folder, the game shows your card with boxes. Drag them onto the spots for the photo, the name, the three statements, the 1-2-3 circles, the vote counter and your logo (if the folder has one), and click **💾 Save layout**. Save `card.json` in the same folder and the game uses it from then on. Click **🎨** in the bar to change it later.
 
 Keep only one card picture in the folder. Any shape works (the ready-made cards are 16:9), and printing fits it onto an A4 page.
 

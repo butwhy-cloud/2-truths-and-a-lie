@@ -77,6 +77,7 @@
 
   /* Your own logo (generic card only): the empty top-left corner. */
   .logo { object-fit: contain; object-position: left center; }
+  .card.custom .logo { object-position: center; background: #fff; border-radius: 14px; padding: 8px 12px; box-shadow: 0 3px 12px rgba(0,0,0,.18); }
 
   /* Answer circles: tap one to mark it as the lie. */
   .vote {
@@ -200,6 +201,9 @@
   }
   .cs-box.round .cs-tag { left: 50%; top: 50%; transform: translate(-50%, -50%); background: #c2185b; font-size: 22px; }
   .cs-box.counter .cs-tag { display: none; }
+  .cs-box.logo { justify-content: center; border-color: #6a1b9a; background: rgba(255,255,255,.85); padding: 6px; }
+  .cs-box.logo .cs-tag { background: #6a1b9a; }
+  .cs-logo { max-width: 100%; max-height: 100%; object-fit: contain; pointer-events: none; }
   .cs-handle { position: absolute; right: 0; bottom: 0; width: 26px; height: 26px; background: #1565c0; cursor: nwse-resize; border-radius: 6px 0 0 0; }
   .cs-box.round .cs-handle { background: #c2185b; border-radius: 50%; right: 6%; bottom: 6%; }
   .cs-panel { background: #fff; padding: 20px 18px; overflow-y: auto; box-shadow: -2px 0 12px rgba(0,0,0,.08); }
@@ -2931,6 +2935,11 @@ var qrcode = function() {
   };
   let layout = BUILT_IN;
   let customCard = null;                  // object URL of a card picture of your own
+  let logoSrc = null;                     // the logo, if the folder has one
+
+  // On a card of your own without a logo spot, the logo goes in the bottom-right corner (move it with 🎨).
+  const defaultLogo = ([w, h]) => { const lw = Math.round(w * 0.15), lh = Math.round(lw * 0.42); return { x: w - lw - Math.round(w * 0.015), y: h - lh - Math.round(h * 0.025), w: lw, h: lh }; };
+  const logoBox = (L) => L.logo || (customCard ? defaultLogo(L.size) : null);
 
   const px = (n) => `${Math.round(n * 10) / 10}px`;
   const box = (b) => `left:${px(b.x)};top:${px(b.y)};width:${px(b.w)};height:${px(b.h)};` + (b.rotate ? `transform:rotate(${b.rotate}deg);` : "");
@@ -2939,6 +2948,7 @@ var qrcode = function() {
   // A layout becomes one small style sheet, so the card on screen and every printed page follow it.
   function applyLayout(L, picture = customCard) {
     layout = L;
+    card.classList.toggle("custom", !!picture);
     const [w, h] = L.size;
     const page = Math.min(1122.5 / w, 793.7 / h);       // A4 landscape at 96 dpi
     $("#layout-css").textContent = [
@@ -2948,7 +2958,7 @@ var qrcode = function() {
       ...L.statements.map((b, i) => `.line[data-i="${i}"]{${box(b)}${fill(b.background)}}`),
       ...L.numbers.map((c, i) => `.vote[data-n="${i + 1}"]{left:${px(c.x - c.d / 2)};top:${px(c.y - c.d / 2)};width:${px(c.d)};height:${px(c.d)};--c:${c.color || "#e2337a"};}`),
       `.live-pill{left:${px(L.counter.x)};top:${px(L.counter.y)};}`,
-      L.logo ? `.logo{${box(L.logo)}}` : `.logo{display:none!important}`,
+      logoBox(L) ? `.logo{${box(logoBox(L))}}` : `.logo{display:none!important}`,
       `@media print{.page .card{transform:scale(${page});margin:${px((h * page - h) / 2)} ${px((w * page - w) / 2)};}}`,
     ].join("\n");
     fit();
@@ -3081,11 +3091,13 @@ var qrcode = function() {
   const LOGO_SLOT = true;
   async function showLogo() {
     const img = $("#logo");
-    if (!LOGO_SLOT || !layout.logo) return;
     let src = chosenPhotos.get("logo");
     if (!src) src = (await Promise.all(["png", "jpg", "jpeg", "webp", "svg", "PNG", "JPG"].map((ext) => tryLoad(`logo.${ext}`)))).find(Boolean);
-    if (src) img.src = src;
-    img.hidden = !src;
+    logoSrc = src || null;
+    // the built-in KIX card has its own logo; any card of your own can carry yours
+    const room = (LOGO_SLOT || customCard) && logoBox(layout);
+    if (logoSrc && room) img.src = logoSrc;
+    img.hidden = !(logoSrc && room);
   }
 
   function usePeople(list) {
@@ -3178,6 +3190,7 @@ var qrcode = function() {
     if (!L) try { const inside = await layoutInPicture(picture); if (inside) L = checkLayout(inside, size); } catch {}
     applyLayout(L || guessLayout(size));
     $("#cardBtn").hidden = false;
+    await showLogo();                    // before the set-up screen, so it can offer a box for the logo
     if (!L) cardSetup.open(json ? "bad" : "new", picture.name);
   }
 
@@ -3328,6 +3341,7 @@ var qrcode = function() {
       ...W.statements.map((b, i) => ({ k: "line", i, label: `Stelling ${i + 1}`, b, sample: ["Stelling een kom hier", "Stelling twee kom hier", "Stelling drie kom hier"][i] })),
       ...W.numbers.map((c, i) => ({ k: "round", i, label: `${i + 1}`, c })),
       { k: "counter", label: "⏱", b: W.counter },
+      ...(logoSrc ? [{ k: "logo", label: "Logo", b: (W.logo ??= defaultLogo(W.size)) }] : []),
     ];
 
     let items = [];
@@ -3340,6 +3354,7 @@ var qrcode = function() {
         const tag = document.createElement("span"); tag.className = "cs-tag"; tag.textContent = item.label; d.append(tag);
         if (item.sample) { item.text = document.createElement("span"); item.text.textContent = item.sample; d.append(item.text); }
         if (item.k === "counter") d.append("⏱ 30");
+        if (item.k === "logo") { const im = document.createElement("img"); im.src = logoSrc; im.className = "cs-logo"; d.append(im); }
         else { const hd = document.createElement("div"); hd.className = "cs-handle"; d.append(hd); }
         d.onpointerdown = (e) => drag(e, item, d);
         item.el = d;
@@ -3935,7 +3950,7 @@ var qrcode = function() {
     function joinLink() {
       const url = new URL(game.playerUrl, location.href);
       url.searchParams.set("k", game.code);
-      url.searchParams.set("v", "202611181704");    // a new version is a new address, so phones never get an old stored copy
+      url.searchParams.set("v", "202611181745");    // a new version is a new address, so phones never get an old stored copy
       if (customPeer) url.searchParams.set("peer", customPeer);
       if (relayConfig) url.hash = new URLSearchParams({ relay: relayConfig.url, key: relayConfig.key }).toString();   // after "#": stays on the phone
       return url.href;
