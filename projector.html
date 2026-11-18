@@ -2843,7 +2843,7 @@ var qrcode = function() {
           const cells = rows.get(r);
           const statements = cols.s.map((c) => cells.get(c) || "");
           const name = cells.get(cols.name) || "";
-          if (!name && !statements.some(Boolean)) continue;
+          if (!statements.some(Boolean)) continue;     // nothing to guess: an unused "Persoon 17" row, a name on its own, a stray 0
           const label = [...cells.values()].map((v) => /^(?:person|persoon)\s*(\d+)$/i.exec(v)).find(Boolean);
           people.push({ n: label ? +label[1] : people.length + 1, name, statements });
         }
@@ -3935,7 +3935,7 @@ var qrcode = function() {
     function joinLink() {
       const url = new URL(game.playerUrl, location.href);
       url.searchParams.set("k", game.code);
-      url.searchParams.set("v", "202611181359");    // a new version is a new address, so phones never get an old stored copy
+      url.searchParams.set("v", "202611181704");    // a new version is a new address, so phones never get an old stored copy
       if (customPeer) url.searchParams.set("peer", customPeer);
       if (relayConfig) url.hash = new URLSearchParams({ relay: relayConfig.url, key: relayConfig.key }).toString();   // after "#": stays on the phone
       return url.href;
