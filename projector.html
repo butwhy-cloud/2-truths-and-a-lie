@@ -3103,7 +3103,7 @@ var qrcode = function() {
 
   /* ---------- loading files ---------- */
 
-  // A card of your own: a picture whose name starts with "card" or "kaart" (card.jpg, kaart hartenbos.png…),
+  // A card of your own: a picture whose name starts with "card" or "kaart" (card.jpg, kaart skool.png…),
   // and where everything goes: card.json next to it, or tucked inside the picture itself (ready-made cards).
   const isCardPicture = (f) => f.type.startsWith("image/") && /^(card|kaart)/.test(key(f.name));
   const isCardLayout = (f) => /^(card|kaart)[^/]*\.json$/i.test(f.name.trim());
@@ -3935,7 +3935,7 @@ var qrcode = function() {
     function joinLink() {
       const url = new URL(game.playerUrl, location.href);
       url.searchParams.set("k", game.code);
-      url.searchParams.set("v", "202611181349");    // a new version is a new address, so phones never get an old stored copy
+      url.searchParams.set("v", "202611181359");    // a new version is a new address, so phones never get an old stored copy
       if (customPeer) url.searchParams.set("peer", customPeer);
       if (relayConfig) url.hash = new URLSearchParams({ relay: relayConfig.url, key: relayConfig.key }).toString();   // after "#": stays on the phone
       return url.href;
